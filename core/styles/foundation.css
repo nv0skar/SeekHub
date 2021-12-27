@@ -1,0 +1,84 @@
+/*
+    SeekHub
+    Copyright (C) 2021 ItsTheGuy
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
+li {
+    font-weight: 900;
+  }
+li span {
+    font-weight: 700;
+}
+
+h2 hr {
+  margin-top: 0px;
+}
+
+#mainSection {
+    position: relative;
+    margin-top: -26px;
+}
+#navbarItemContainer {
+  align-content: initial;
+}
+#footerNotices {
+    width: 75%;
+  }
+.navbar-item.resize {
+    text-align: center;
+    font-weight: 600 !important;
+}
+.navbar-item.hoverWithBlack:hover {
+    color: black;
+}
+
+@media screen and (max-width: 1024px) {
+    #mainSection {
+      position: relative;
+      margin-top: -26px;
+    }
+    #navbarContainer {
+      display: flex;
+    }
+    #footerNotices {
+      width: 75%;
+    }
+    .navbar {
+      display: flex;
+    }
+    .navbar-item.resize {
+        text-align: center;
+        font-weight: 400;
+        font-size: small;
+        padding-top: 17.5px;
+    }
+}
+
+@media screen and (max-width: 612px) {
+    #mainSection {
+      position: relative;
+      margin-top: -32px;
+    }
+    #navbarItemContainer {
+      align-content: center;
+    }
+    #footerNotices {
+      width: 85%;
+    }
+    .navbar-item.resize {
+        display: none;
+    }
+}
