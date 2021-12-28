@@ -1,0 +1,68 @@
+<!--
+  SeekHub
+  Copyright (C) 2021 ItsTheGuy
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+<!DOCTYPE html>
+<html lang="en" class="has-navbar-fixed-top" id="main">
+  <head id="foundation">
+    <meta charset="utf-8">
+    <link rel="icon" href="./assets/icon.webp">
+    <link rel="shortcut icon" href="./assets/icon.png">
+    <title>{{title}}</title>
+    <meta name="description" content="Description about the place">
+    <meta property="og:title" content="{{title}}"/>
+    <meta property="og:description" content="Description about the place">
+    <meta property="og:image" content="./assets/icon.png">
+    <meta property="og:type" content="website"/>
+    <meta property="og:url" content=""/>
+    <meta property="og:locale" content="en_US"/>
+    <link rel="canonical" href="">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.2/css/bulma.min.css">
+    <link rel="stylesheet" href="./assets/styles/foundation.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com"> 
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin> 
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Gemunu+Libre:wght@800&display=swap" rel="stylesheet"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body style="background-color: #ffffff; scroll-margin-top: 60px;" id="mainContent">
+    <nav class="navbar is-fixed-top" role="navigation" aria-label="main navigation" style="background-color: rgba(255, 255, 255, 0.80); backdrop-filter: blur(56px); -webkit-backdrop-filter: blur(56px); box-shadow: 0 2px 2px 0 rgba(50, 34, 56, 0.2);">
+      <div class="navbar-brand">
+        <div class="navbar-item" style="line-height: 15px;">
+              <a style="font-weight: 900; color: black; text-shadow: -0.5px 0.5px grey;" href="#mainContent"><span id="title1stLine">{{navTitle1st}}</span><br><span id="title2ndLine">{{navTitle2nd}}</span></a>
+          </div>
+      </div>
+      <div id="navbarSection" style="align-items: stretch; display:flex;"></div>
+      </div>
+  </nav>
+  <section class="section" style="align-content: center;" id="mainSection"></section>
+  </body>
+  <footer class="footer" style="background-color: #f5f5f5;">
+    <div id="footerContainer" class="content has-text-centered">
+      <article id="footerNotices" class="message is-link" style="width: 75%; position: relative; left: 50%; transform: translate(-50%, 0%); display: {{extraInfoVisibility}};" id="extraInfo">
+        <div class="message-body" style="background-color: rgb(219, 219, 219); border-left-style: none; font-size: small; font-weight: 700; color: black;">
+          <ol id="extraInfoContainer" style="list-style-position: inside; margin-left: -2px; position: relative; bottom: 4px;">
+          </ol>
+        </div>
+      </article>
+      <div class="has-text-white" style="font-display: swap; position: relative; line-height: 22px; top: 12px;">
+        <span style="font-size: 36px; font-weight: 900; color: black; line-height: 32px;">{{nameFooter}}</span>
+        <br>
+        <span style="font-size: 12px; font-weight: 300; color: black;">{{legalNotice}}</span>
+    </div>
+  </footer>
+</html>
