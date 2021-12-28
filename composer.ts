@@ -66,8 +66,8 @@ export class compose {
     }
 
     static async contruct() {
-        const mainScreen = render(await Deno.readTextFile("./public/elements/index.html"), {navTitle1st: config.navTitle[0], navTitle2nd: config.navTitle[1], extraInfoVisibility: (config.extraInfo.length == 0 ? "none":"block"), nameFooter: config.name, legalNotice: config.legalNotice});
-        const foundation = render(await Deno.readTextFile("./public/elements/foundation.html"), {title: config.title});
+        const mainScreen = render(await Deno.readTextFile("./public/elements/index.html"), {title: config.title,navTitle1st: config.navTitle[0], navTitle2nd: config.navTitle[1], extraInfoVisibility: (config.extraInfo.length == 0 ? "none":"block"), nameFooter: config.name, legalNotice: config.legalNotice});
+        const foundation = await Deno.readTextFile("./public/elements/foundation.html");
         const scripts = await Deno.readTextFile("./public/elements/scripts.html");
 
         // deno-lint-ignore prefer-const
