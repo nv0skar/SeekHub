@@ -14,25 +14,42 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import { serve } from "https://deno.land/std@0.114.0/http/server.ts";
+import {bold, cyan, green, yellow, white} from "https://deno.land/std@0.118.0/fmt/colors.ts";
+import { Application, Router } from "https://deno.land/x/oak/mod.ts";
 import * as config from "./config.ts"
-import { compose } from "./composer.ts"
+import { renderBase } from "./renderBase.ts"
 
-async function handleRequest(request: Request): Promise<Response> {
-  const { pathname } = new URL(request.url);
+const requestInformer = (origin:string, userAgent: string | null, route: string | null) => console.log(yellow(bold("(Server)")), `Request from '${origin ?? "Unknown"}' with user-agent '${(userAgent ?? "Unknown")}' to '${(route ?? "Unknown")}'`);
 
-  if ((pathname.toString()) == "/") {
-    if (!config.setup) {return new Response("Setup", {headers: {"content-type": "text/html"}});
-    } else {return new Response((await compose.contruct()).toString(), {headers: {"content-type": "text/html"}});}
-  } else {return new Response("404 Error 😅", {headers: {"content-type": "text/html",},});}
-}
+const requestsHandler = new Router()
+  .get("/", async (request) => {
+    requestInformer(request.request.ip, request.request.headers.get("user-agent"), request.request.url.pathname);
+    request.response.type = "text/html"
+    if (!config.data.setup) {
+      console.log(yellow(bold("(Setup)")), "Setup page was returned instead of the main page!")
+      request.response.body = await renderBase.setup();
+    } else {
+      request.response.body = await renderBase.rootPath();
+    }
+  })
+  .post("/", (request) => {
+    requestInformer(request.request.ip, request.request.headers.get("user-agent"), request.request.url.pathname);
+    request.response.type = "text/json"
+    if (!config.data.setup) {
+      console.log(yellow(bold("(Setup)")), "Setup data received!");
+      // config.updateConfig("setup", true);
+      // request.response.body = {status: "success"};
+    }
+  })
 
 async function main() {
-  console.log("Loading configs from file...");
-  const statusConfig:boolean = await config.updateConfig();
-  if (!statusConfig) {console.log("There was an error while trying to load configs... Now exiting!"); return(0);}
-  console.log("Listening on port 8000...");
-  await serve(handleRequest);
+  console.log(white(bold("--- SeekHub ---")));
+  console.log(cyan("Loading configs from file..."));
+  await config.fetchConfig();
+  console.log(green(bold(`Listening on: ${config.server.hostname}:${config.server.port}!`)));
+  const appServer = new Application()
+    .use(requestsHandler.routes())
+  await appServer.listen({hostname: config.server.hostname, port: config.server.port})
 }
 
 main();

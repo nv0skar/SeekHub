@@ -23,7 +23,7 @@ export class compose {
     static async renderDynamicElements(composition: Document) {
         // For each pair of categories add a section
         const superContainer = await Deno.readTextFile("./public/elements/sections/superContainers.html");
-        const numberOfSectionGroups = Math.round(config.categories.length/2);
+        const numberOfSectionGroups = Math.round(config.data.categories.length/2);
         for (let i = 0; numberOfSectionGroups > i; i++) {
             const sectionGroupsElement = new DOMParser().parseFromString(render(superContainer, {num: i}).toString(), "text/html")!.documentElement!.outerHTML.toString();
             composition.documentElement!.getElementById("mainSection")!.innerHTML += sectionGroupsElement;
@@ -34,8 +34,8 @@ export class compose {
         const sectionContainer = await Deno.readTextFile("./public/elements/sections/container.html");
         let actualGroup = 0
         let repetitionsOfGroup = 0
-        for (const i in config.categories) {
-            const elementData = config.categories[i];
+        for (const i in config.data.categories) {
+            const elementData = config.data.categories[i];
             const navbarElement = new DOMParser().parseFromString(render(navbarItem, {id: elementData.tag, name: elementData.name}).toString(), "text/html")!.documentElement!.outerHTML.toString();
             const sectionElement = new DOMParser().parseFromString(render(sectionContainer, {id: elementData.tag, name: elementData.name}).toString(), "text/html")!.documentElement!.outerHTML.toString();
             composition.documentElement!.getElementById("navbarSection")!.innerHTML += navbarElement;
@@ -48,8 +48,8 @@ export class compose {
         const elementItem = await Deno.readTextFile("./public/elements/sections/element.html");
         let lastType2Render = ""
         let numberLastTypeRendered = 0
-        for (const i in config.items) {
-            const elementData = config.items[i];
+        for (const i in config.data.items) {
+            const elementData = config.data.items[i];
             if (elementData.type != lastType2Render) numberLastTypeRendered = 1;
             else numberLastTypeRendered += 1;
             lastType2Render = elementData.type;
@@ -59,14 +59,14 @@ export class compose {
 
         // For each piece of information add it to a box in the footer
         const footerInfoElement = await Deno.readTextFile("./public/elements/footer/footerInfoElement.html");
-        for (const i in config.extraInfo) {
-            const footerInfo = new DOMParser().parseFromString(render(footerInfoElement, {text: config.extraInfo[i].text}), "text/html")!.documentElement!.outerHTML.toString();
+        for (const i in config.data.extraInfo) {
+            const footerInfo = new DOMParser().parseFromString(render(footerInfoElement, {text: config.data.extraInfo[i].text}), "text/html")!.documentElement!.outerHTML.toString();
             composition.documentElement!.getElementById("extraInfoContainer")!.innerHTML += footerInfo;
         }
     }
 
     static async contruct() {
-        const mainScreen = render(await Deno.readTextFile("./public/elements/index.html"), {title: config.title,navTitle1st: config.navTitle[0], navTitle2nd: config.navTitle[1], extraInfoVisibility: (config.extraInfo.length == 0 ? "none":"block"), nameFooter: config.name, legalNotice: config.legalNotice});
+        const mainScreen = render(await Deno.readTextFile("./public/elements/index.html"), {title: config.data.title,navTitle1st: config.data.navTitle[0], navTitle2nd: config.data.navTitle[1], extraInfoVisibility: (config.data.extraInfo.length == 0 ? "none":"block"), nameFooter: config.data.name, legalNotice: config.data.legalNotice});
         const foundation = await Deno.readTextFile("./public/elements/foundation.html");
         const scripts = await Deno.readTextFile("./public/elements/scripts.html");
 

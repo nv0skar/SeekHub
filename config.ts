@@ -14,34 +14,54 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-export async function updateConfig() {
-    try {
-        const userConfigFile = JSON.parse(await Deno.readTextFile("./configs.json"));
-        if (userConfigFile.setup == undefined) return false;
-        setup = userConfigFile.setup;
-        if (userConfigFile.title == undefined) return false;
-        title = userConfigFile.title;
-        if (userConfigFile.name == undefined) return false;
-        name = userConfigFile.name;
-        if (userConfigFile.navTitle == undefined) return false;
-        navTitle = userConfigFile.navTitle;
-        if (userConfigFile.categories == undefined) return false;
-        categories = userConfigFile.categories;
-        if (userConfigFile.items == undefined) return false;
-        items = userConfigFile.items;
-        if (userConfigFile.extraInfo == undefined) return false;
-        extraInfo = userConfigFile.extraInfo;
-        if (userConfigFile.legalNotice == undefined) return false;
-        legalNotice = userConfigFile.legalNotice;
-        return true;
-    } catch {return false;}
+import {red} from "https://deno.land/std@0.118.0/fmt/colors.ts";
+
+export const configKeys = ["setup", "title", "name", "navTitle", "categories", "items", "extraInfo", "legalNotice"];
+
+export interface configStructure {
+    setup:boolean;
+    title:string;
+    name:string;
+    navTitle:string[];
+    categories:{tag: string, name: string}[];
+    items:{id: number, type: string, image: string, name: string, description: string, price: string, allergens: string}[];
+    extraInfo:{text: string}[];
+    legalNotice:string;
 }
 
-export let setup:boolean;
-export let title:string;
-export let name:string;
-export let navTitle:string;
-export let categories:{tag: string, name: string}[];
-export let items:{id: number, type: string, image: string, name: string, description: string, price: string, allergens: string}[];
-export let extraInfo:{text: string}[];
-export let legalNotice:string;
+const file2SaveConfig = "./configs.json"
+
+export async function fetchConfig() {
+    try {
+        const retrievedConfigFile = JSON.parse(await Deno.readTextFile(file2SaveConfig));
+        data = {setup: retrievedConfigFile.setup ?? data.setup, title: retrievedConfigFile.title ?? data.title, name: retrievedConfigFile.name ?? data.name, navTitle: retrievedConfigFile.navTitle ?? data.navTitle, categories: retrievedConfigFile.categories ?? data.categories, items: retrievedConfigFile.items ?? data.items, extraInfo: retrievedConfigFile.extraInfo ?? data.extraInfo, legalNotice: retrievedConfigFile.legalNotice ?? data.legalNotice}
+        return true;
+    } catch {
+        console.log(red("There was an error while trying to load configs... Now exiting!"));
+        Deno.exit();
+    }
+}
+
+// deno-lint-ignore no-explicit-any
+export async function updateConfig(key:string, value:any, fetch=true) {
+    try {
+        // @ts-ignore: The configKeys values are the same as the keys in configStructure so it shouldn't be a problem use configKeys as an index key
+        data[key] = value
+        await Deno.writeTextFile(file2SaveConfig, JSON.stringify(data));
+    } catch(e) {
+        console.log(e);
+    }
+    if (fetch) await fetchConfig();
+}
+
+export const server = {hostname: "127.0.0.1", port: 2000}
+export let data: configStructure = {
+    setup: false,
+    title: "",
+    name: "",
+    navTitle: [],
+    categories: [],
+    items: [],
+    extraInfo: [],
+    legalNotice: ""
+};
