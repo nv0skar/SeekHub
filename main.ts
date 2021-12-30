@@ -19,11 +19,11 @@ import { Application, Router } from "https://deno.land/x/oak/mod.ts";
 import * as config from "./config.ts"
 import { renderBase } from "./renderBase.ts"
 
-const requestInformer = (origin:string, userAgent: string | null, route: string | null) => console.log(yellow(bold("(Server)")), `Request from '${origin ?? "Unknown"}' with user-agent '${(userAgent ?? "Unknown")}' to '${(route ?? "Unknown")}'`);
+const requestInformer = (origin:string, userAgent: string | null, route: string | null, method:string) => console.log(yellow(bold("(Server)")), `Request from '${origin ?? "Unknown"}' with user-agent '${(userAgent ?? "Unknown")}' to '${(route ?? "Unknown")}' with method '${method}'`);
 
 const requestsHandler = new Router()
   .get("/", async (request) => {
-    requestInformer(request.request.ip, request.request.headers.get("user-agent"), request.request.url.pathname);
+    requestInformer(request.request.ip, request.request.headers.get("user-agent"), request.request.url.pathname, request.request.method);
     request.response.type = "text/html"
     if (!config.data.setup) {
       console.log(yellow(bold("(Setup)")), "Setup page was returned instead of the main page!")
@@ -32,13 +32,29 @@ const requestsHandler = new Router()
       request.response.body = await renderBase.rootPath();
     }
   })
-  .post("/", (request) => {
-    requestInformer(request.request.ip, request.request.headers.get("user-agent"), request.request.url.pathname);
-    request.response.type = "text/json"
+  .post("/", async (request) => {
+    requestInformer(request.request.ip, request.request.headers.get("user-agent"), request.request.url.pathname, request.request.method);
+    request.response.type = "application/json"
     if (!config.data.setup) {
-      console.log(yellow(bold("(Setup)")), "Setup data received!");
-      // config.updateConfig("setup", true);
-      // request.response.body = {status: "success"};
+      console.log(yellow(bold("(Setup)")), "Setup data submitted!");
+      if (request.request.body().type == "json") {
+        try {
+          const dataParsed = await request.request.body().value;
+          for (const i in config.configKeys.slice(1)) {
+            if (dataParsed[config.configKeys.slice(1)[i]] == undefined) continue;
+            // @ts-ignore: The configKeys values are the same as the keys in configStructure so it shouldn't be a problem use configKeys as an index key
+            await config.updateConfig(config.configKeys.slice(1)[i], (dataParsed[config.configKeys.slice(1)[i]] ?? config.data[config.configKeys.slice(1)]), false);
+          }
+          await config.updateConfig("setup", true);
+          request.response.body = {status: "success"};
+          console.log(yellow(bold("(Setup)")), "Setup finished successfully!");
+          return
+        // deno-lint-ignore no-empty
+        } catch {}
+      }
+      console.log(yellow(bold("(Setup)")), "The data sent in the setup wasn't valid!");
+      request.response.status = 500;
+      request.response.body = {status: "failed"};
     }
   })
 

@@ -37,19 +37,31 @@ export async function fetchConfig() {
         data = {setup: retrievedConfigFile.setup ?? data.setup, title: retrievedConfigFile.title ?? data.title, name: retrievedConfigFile.name ?? data.name, navTitle: retrievedConfigFile.navTitle ?? data.navTitle, categories: retrievedConfigFile.categories ?? data.categories, items: retrievedConfigFile.items ?? data.items, extraInfo: retrievedConfigFile.extraInfo ?? data.extraInfo, legalNotice: retrievedConfigFile.legalNotice ?? data.legalNotice}
         return true;
     } catch {
-        console.log(red("There was an error while trying to load configs... Now exiting!"));
-        Deno.exit();
+        console.log(red("There was an error while trying to load config data! So regenerating the file..."));
+        await updateConfig(undefined, undefined, false)
     }
 }
 
 // deno-lint-ignore no-explicit-any
-export async function updateConfig(key:string, value:any, fetch=true) {
-    try {
-        // @ts-ignore: The configKeys values are the same as the keys in configStructure so it shouldn't be a problem use configKeys as an index key
-        data[key] = value
-        await Deno.writeTextFile(file2SaveConfig, JSON.stringify(data));
-    } catch(e) {
-        console.log(e);
+export async function updateConfig(key:string | undefined, value:any | undefined, fetch=true) {
+    if (key != undefined && value != undefined)
+    for (const i in configKeys) {
+        if (configKeys[i] == key) {
+            try {
+                // @ts-ignore: The configKeys values are the same as the keys in configStructure so it shouldn't be a problem use configKeys as an index key
+                data[key] = value;
+                await Deno.writeTextFile(file2SaveConfig, JSON.stringify(data));
+            } catch(e) {
+                console.log(red(e));
+            }
+            break
+        }
+    } else {
+        try {
+            await Deno.writeTextFile(file2SaveConfig, JSON.stringify(data));
+        } catch(e) {
+            console.log(red("Error:"), e);
+        }
     }
     if (fetch) await fetchConfig();
 }
