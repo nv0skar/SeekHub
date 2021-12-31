@@ -16,9 +16,24 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 
-<script>
+<script defer src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.1/dist/js.cookie.min.js"></script>
+<script defer>
     function switchVisibility2Placeholder(id) {
       document.getElementById("imagePlaceholderProduct" + id).style.display = 'block';
       return;
+    }
+
+    window.onload = function() {
+      document.body.scrollTop = Cookies.get('scrollingPosition');
+    }
+
+    let counter2SaveScrollPosCookie = 0
+    window.onscroll = function() {
+        if (counter2SaveScrollPosCookie == 10) {
+            document.cookie = `scrollingPosition=${document.body.scrollTop}; max-age=7200`;
+            counter2SaveScrollPosCookie = 0
+        } else {
+          counter2SaveScrollPosCookie += 1
+        }
     }
   </script>
