@@ -14,16 +14,16 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import { compose } from "./composer.ts";
+import { composeMain, composeSetup } from "./composer.ts";
 
 export class renderBase {
 
     static async rootPath() {
-        return (await compose.contruct()).toString();
+        return (await composeMain.contruct()).toString();
     }
 
     static async setup() {
-        return await "Setup";
+        return (await composeSetup.contruct()).toString();
     }
 
 }

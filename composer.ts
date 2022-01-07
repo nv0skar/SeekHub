@@ -18,7 +18,23 @@ import { render } from 'https://deno.land/x/mustache_ts/mustache.ts';
 import { DOMParser, Document } from "https://deno.land/x/deno_dom/deno-dom-wasm.ts";
 import * as config from "./config.ts"
 
-export class compose {
+export class composeSetup {
+    static async contruct() {
+        const setup = await Deno.readTextFile("./public/elements/setup/setup.html");
+        const foundation = await Deno.readTextFile("./public/elements/setup/foundation.html");
+        const scripts = await Deno.readTextFile("./public/elements/setup/scripts.html");
+
+        // deno-lint-ignore prefer-const
+        let composition = new DOMParser().parseFromString(setup, "text/html")!;
+
+        composition.documentElement!.getElementById("foundation")!.innerHTML += new DOMParser().parseFromString(foundation.toString(), "text/html")!.documentElement!.outerHTML.toString();
+        composition.documentElement!.getElementById("foundation")!.innerHTML += new DOMParser().parseFromString(scripts.toString(), "text/html")!.documentElement!.outerHTML.toString();
+
+        return composition.documentElement!.outerHTML;        
+    }
+}
+
+export class composeMain {
 
     static async renderDynamicElements(composition: Document) {
         // For each pair of categories add a section
@@ -66,17 +82,17 @@ export class compose {
     }
 
     static async contruct() {
-        const mainScreen = render(await Deno.readTextFile("./public/elements/index.html"), {title: config.data.title,navTitle1st: config.data.navTitle[0], navTitle2nd: config.data.navTitle[1], extraInfoVisibility: (config.data.extraInfo.length == 0 ? "none":"block"), nameFooter: config.data.name, legalNotice: config.data.legalNotice});
+        const main = render(await Deno.readTextFile("./public/elements/index.html"), {title: config.data.title,navTitle1st: config.data.navTitle[0], navTitle2nd: config.data.navTitle[1], extraInfoVisibility: (config.data.extraInfo.length == 0 ? "none":"block"), nameFooter: config.data.name, legalNotice: config.data.legalNotice});
         const foundation = await Deno.readTextFile("./public/elements/foundation.html");
         const scripts = await Deno.readTextFile("./public/elements/scripts.html");
 
         // deno-lint-ignore prefer-const
-        let composition = new DOMParser().parseFromString(mainScreen, "text/html")!;
+        let composition = new DOMParser().parseFromString(main, "text/html")!;
 
         composition.documentElement!.getElementById("foundation")!.innerHTML += new DOMParser().parseFromString(foundation.toString(), "text/html")!.documentElement!.outerHTML.toString();
         composition.documentElement!.getElementById("foundation")!.innerHTML += new DOMParser().parseFromString(scripts.toString(), "text/html")!.documentElement!.outerHTML.toString();
 
-        await compose.renderDynamicElements(composition);
+        await composeMain.renderDynamicElements(composition);
 
         return composition.documentElement!.outerHTML;
         
