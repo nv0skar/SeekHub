@@ -18,7 +18,36 @@
 
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
 <script defer>
-    function go() {
-        var formData = JSON.stringify($("#setup").serializeArray());
+    let unloadConfirmedByUser = false;
+    function finishSetup() {
+        event.preventDefault();
+        const setupData = JSON.stringify($("#setup").serializeArray());
+        $.ajax({
+          type: "POST",
+          url: "/",
+          data: setupData,
+          success: function(data){
+            const elementsForm = ["title", "name", "navTitle", "legalNotice"]
+            for (const i in elementsForm) {
+              document.getElementById('subtitle').innerHTML = "Now save your master key safely, don't share it with anyone!"
+              document.getElementById(`${elementsForm[i]}Container`).style.display = "none";
+              document.getElementById(`${elementsForm[i]}Input`).readOnly = true;
+            }
+            document.getElementById("masterKeyContainer").style.display = "block";
+            document.getElementById("masterKeyInput").setAttribute("value", data["masterKey"]);
+            document.getElementById("submitButton").onclick = function() {
+              event.preventDefault();
+              if (confirm("Are you sure?") == true) {
+                unloadConfirmedByUser = true;
+                location.reload();
+              }
+            };
+            document.getElementById("submitButton").setAttribute("value", "Finish!");
+          },
+          dataType: "json",
+          contentType : "application/json"
+        });
     }    
+
+    window.onbeforeunload = function() { if (!unloadConfirmedByUser) event.preventDefault(); }
 </script>

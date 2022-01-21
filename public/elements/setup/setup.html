@@ -33,40 +33,40 @@
       <h1 id="title">SeekHub</h1>
       <hr>
       <h2 id="subtitle">Hi! Now you'll be asked some info to setup your brand new menu website!</h2>
-      <form action="" method="POST" id="setup">
-        <div class="form-group">
+      <form onsubmit="return finishSetup();" id="setup">
+        <div class="form-group" id="titleContainer">
           <label for="title" class="required">Website's title</label>
-          <input type="text" class="form-control" name="title" placeholder="Title" required="required">
+          <input type="text" class="form-control" name="title" placeholder="Title" required="required" id="titleInput">
         </div>
-        <div class="form-group">
+        <div class="form-group" id="nameContainer">
           <label for="name" class="required">Local's name</label>
-          <input type="text" class="form-control" name="name" placeholder="Name" required="required">
+          <input type="text" class="form-control" name="name" placeholder="Name" required="required" id="nameInput">
           <div class="form-text">
             This will show up in the website's footer
           </div>
         </div>
-        <label for="navbarTitle" class="required">Navbar title</label>
-        <input style="margin-bottom: 8px;" type="text" class="form-control" placeholder="First line" required="required">
-        <input type="text" class="form-control" placeholder="Second Line (Not Required)">
-        <div class="form-text">
-          Those will show up in the navbar
+        <div class="form-group" id="navTitleContainer">
+          <label for="navbarTitle" class="required">Navbar title</label>
+          <input style="margin-bottom: 8px;" type="text" class="form-control" name="navTitle" placeholder="Navbar title" required="required" id="navTitleInput">
+          <div class="form-text">
+            This will show up in the navbar
+          </div>
         </div>
-        <br>
-        <div class="form-group">
+        <div class="form-group" id="legalNoticeContainer">
           <label for="name" class="required">Legal Notices</label>
-          <input type="text" class="form-control" name="legalNotices" placeholder="Notices" required="required">
+          <input type="text" class="form-control" name="legalNotice" placeholder="Notices" required="required" id="legalNoticeInput">
           <div class="form-text">
             This will show up in the website's footer, just under the local's name
           </div>
         </div>
-        <div class="form-group">
-          <label for="key" class="required">Master Key</label>
-          <input type="password" class="form-control" id="password" name="" placeholder="Key" required="required">
-          <div class="form-text">
+        <div class="form-group" id="masterKeyContainer">
+          <label for="key" class="">Master Key</label>
+          <input readonly type="text" class="form-control" name="masterKey" placeholder="Not generated yet" value="" id="masterKeyInput">
+          <div class="form-text" id="masterKeyInstruction">
             You'll have to use this key if you want to customize the website after the setup
           </div>
         </div>
-        <input class="btn btn-primary btn-block" type="submit" value="Finish">
+        <input class="btn btn-primary btn-block" type="submit" value="Go!" id="submitButton">
       </form>
     </div>
   </body>

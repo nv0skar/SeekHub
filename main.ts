@@ -16,6 +16,8 @@
 
 import {bold, cyan, green, yellow, white} from "https://deno.land/std@0.118.0/fmt/colors.ts";
 import { Application, Router } from "https://deno.land/x/oak/mod.ts";
+import { customAlphabet } from "https://deno.land/x/nanoid/customAlphabet.ts";
+import * as bcrypt from "https://deno.land/x/bcrypt/mod.ts";
 import * as config from "./config.ts"
 import { renderBase } from "./renderBase.ts"
 
@@ -25,7 +27,7 @@ const requestsHandler = new Router()
   .get("/", async (request) => {
     requestInformer(request.request.ip, request.request.headers.get("user-agent"), request.request.url.pathname, request.request.method);
     request.response.type = "text/html"
-    if (!config.data.setup) {
+    if (!config.getData("setup")) {
       console.log(yellow(bold("(Setup)")), "Setup page was returned instead of the main page!")
       request.response.body = await renderBase.setup();
     } else {
@@ -35,18 +37,27 @@ const requestsHandler = new Router()
   .post("/", async (request) => {
     requestInformer(request.request.ip, request.request.headers.get("user-agent"), request.request.url.pathname, request.request.method);
     request.response.type = "application/json"
-    if (!config.data.setup) {
+    if (!config.getData("setup")) {
       console.log(yellow(bold("(Setup)")), "Setup data submitted!");
       if (request.request.body().type == "json") {
         try {
-          const dataParsed = await request.request.body().value;
-          for (const i in config.configKeys.slice(1)) {
-            if (dataParsed[config.configKeys.slice(1)[i]] == undefined) continue;
-            // @ts-ignore: The configKeys values are the same as the keys in configStructure so it shouldn't be a problem use configKeys as an index key
-            await config.updateConfig(config.configKeys.slice(1)[i], (dataParsed[config.configKeys.slice(1)[i]] ?? config.data[config.configKeys.slice(1)]), false);
+          const dataParsed: config.configStructure[] = await request.request.body().value;
+          for (const i in config.setupKeys) {
+            for (const o in dataParsed) {
+              if (dataParsed[o].name == config.setupKeys[i]) {
+                if (dataParsed[o].value == "") {
+                  console.log(yellow(bold("(Setup)")), `The data sent in the ${config.setupKeys[i]} value wasn't valid!`);
+                  request.response.status = 500;
+                  request.response.body = {status: "failed"};
+                }
+                await config.updateConfig({name: config.setupKeys[i], value: (dataParsed[o].value ?? config.getData(config.setupKeys[i]))}, false);
+              }
+            }
           }
-          await config.updateConfig("setup", true);
-          request.response.body = {status: "success"};
+          const masterKeyGen: string = (customAlphabet('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_+=@', 36))();
+          await config.updateConfig({name: "masterKey", value: bcrypt.hashSync(masterKeyGen)});
+          await config.updateConfig({name: "setup", value: true});
+          request.response.body = {status: "success", masterKey: masterKeyGen};
           console.log(yellow(bold("(Setup)")), "Setup finished successfully!");
           return
         // deno-lint-ignore no-empty

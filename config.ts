@@ -14,42 +14,37 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import {red} from "https://deno.land/std@0.118.0/fmt/colors.ts";
+import {red, cyan} from "https://deno.land/std@0.118.0/fmt/colors.ts";
 
-export const configKeys = ["setup", "title", "name", "navTitle", "categories", "items", "extraInfo", "legalNotice"];
+export const server = {hostname: "127.0.0.1", port: 2000}
+
+export const configKeys = ["setup", "title", "name", "navTitle", "categories", "items", "extraInfo", "legalNotice", "masterKey"];
+export const setupKeys = ["title", "name", "navTitle", "legalNotice"];
 
 export interface configStructure {
-    setup:boolean;
-    title:string;
     name:string;
-    navTitle:string[];
-    categories:{tag: string, name: string}[];
-    items:{id: number, type: string, image: string, name: string, description: string, price: string, allergens: string}[];
-    extraInfo:{text: string}[];
-    legalNotice:string;
+    value:boolean | string | string[] | {tag: string, name: string}[] | {id: number, type: string, image: string, name: string, description: string, price: string, allergens: string}[] | {text: string}[];
 }
 
-const file2SaveConfig = "./configs.json"
+const file2SaveConfig = "./config.json"
 
 export async function fetchConfig() {
     try {
-        const retrievedConfigFile = JSON.parse(await Deno.readTextFile(file2SaveConfig));
-        data = {setup: retrievedConfigFile.setup ?? data.setup, title: retrievedConfigFile.title ?? data.title, name: retrievedConfigFile.name ?? data.name, navTitle: retrievedConfigFile.navTitle ?? data.navTitle, categories: retrievedConfigFile.categories ?? data.categories, items: retrievedConfigFile.items ?? data.items, extraInfo: retrievedConfigFile.extraInfo ?? data.extraInfo, legalNotice: retrievedConfigFile.legalNotice ?? data.legalNotice}
+        const retrievedConfigFile: configStructure[] = JSON.parse(await Deno.readTextFile(file2SaveConfig));
+        data = retrievedConfigFile;
         return true;
     } catch {
-        console.log(red("There was an error while trying to load config data! So regenerating the file..."));
-        await updateConfig(undefined, undefined, false)
+        console.log(red("There was an error while trying to load config data!"), cyan("So regenerating the file..."));
+        await updateConfig(undefined, false)
     }
 }
 
-// deno-lint-ignore no-explicit-any
-export async function updateConfig(key:string | undefined, value:any | undefined, fetch=true) {
-    if (key != undefined && value != undefined)
-    for (const i in configKeys) {
-        if (configKeys[i] == key) {
+export async function updateConfig(data2Update: configStructure | undefined, fetch=true) {
+    if (data2Update != undefined)
+    for (const dataIndex in data) {
+        if (data[dataIndex].name == data2Update.name) {
             try {
-                // @ts-ignore: The configKeys values are the same as the keys in configStructure so it shouldn't be a problem use configKeys as an index key
-                data[key] = value;
+                data[dataIndex].value = data2Update.value;
                 await Deno.writeTextFile(file2SaveConfig, JSON.stringify(data));
             } catch(e) {
                 console.log(red(e));
@@ -66,14 +61,32 @@ export async function updateConfig(key:string | undefined, value:any | undefined
     if (fetch) await fetchConfig();
 }
 
-export const server = {hostname: "127.0.0.1", port: 2000}
-export let data: configStructure = {
-    setup: false,
-    title: "",
-    name: "",
-    navTitle: [],
-    categories: [],
-    items: [],
-    extraInfo: [],
-    legalNotice: ""
-};
+export function getData(key:string) {
+    for (const dataIndex in data) {
+        if (data[dataIndex].name == key) {
+            if (data[dataIndex].name == "navTitle") {
+                let buff1 = ""; let buff2 = "";
+                for (let i = 0, encountered = false; i < (data[dataIndex].value as string).length; i++) {
+                    const char = (data[dataIndex].value as string).charAt(i);
+                    if (char == " ") { encountered = true; continue }
+                    if (!encountered) buff1 += char;
+                    else buff2 += char;
+                }
+                return [buff1, buff2]
+            }
+            return data[dataIndex].value;
+        }
+    }
+}
+
+export let data: configStructure[] = [
+    {name: "setup", value: false}, 
+    {name: "title", value: ""}, 
+    {name: "name", value: ""}, 
+    {name: "navTitle", value: ""},
+    {name: "categories", value: []},
+    {name: "items", value: []},
+    {name: "extraInfo", value: []},
+    {name: "legalNotice", value: ""},
+    {name: "masterKey", value: ""}
+];
