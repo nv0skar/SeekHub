@@ -18,12 +18,12 @@ import {red, cyan} from "https://deno.land/std@0.118.0/fmt/colors.ts";
 
 export const server = {hostname: "127.0.0.1", port: 2000}
 
-export const configKeys = ["setup", "title", "name", "navTitle", "categories", "items", "extraInfo", "legalNotice", "masterKey"];
+export const configKeys = ["setup", "title", "name", "navTitle", "categories", "items", "extraInfo", "legalNotice", "masterKey", "tempKey", "sessionTime"];
 export const setupKeys = ["title", "name", "navTitle", "legalNotice"];
 
 export interface configStructure {
     name:string;
-    value:boolean | string | string[] | {tag: string, name: string}[] | {id: number, type: string, image: string, name: string, description: string, price: string, allergens: string}[] | {text: string}[];
+    value:boolean | string | number | string[] | {tag: string, name: string}[] | {id: number, type: string, image: string, name: string, description: string, price: string, allergens: string}[] | {text: string}[];
 }
 
 const file2SaveConfig = "./config.json"

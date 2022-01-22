@@ -16,10 +16,9 @@
 
 import {bold, cyan, green, yellow, white} from "https://deno.land/std@0.118.0/fmt/colors.ts";
 import { Application, Router } from "https://deno.land/x/oak/mod.ts";
-import { customAlphabet } from "https://deno.land/x/nanoid/customAlphabet.ts";
-import * as bcrypt from "https://deno.land/x/bcrypt/mod.ts";
 import * as config from "./config.ts"
-import { renderBase } from "./renderBase.ts"
+import { secrets } from "./secrets.ts"
+import { renderer } from "./utils.ts"
 
 const requestInformer = (origin:string, userAgent: string | null, route: string | null, method:string) => console.log(yellow(bold("(Server)")), `Request from '${origin ?? "Unknown"}' with user-agent '${(userAgent ?? "Unknown")}' to '${(route ?? "Unknown")}' with method '${method}'`);
 
@@ -29,11 +28,12 @@ const requestsHandler = new Router()
     request.response.type = "text/html"
     if (!config.getData("setup")) {
       console.log(yellow(bold("(Setup)")), "Setup page was returned instead of the main page!")
-      request.response.body = await renderBase.setup();
+      request.response.body = await renderer.setup();
     } else {
-      request.response.body = await renderBase.rootPath();
+      request.response.body = await renderer.main();
     }
   })
+
   .post("/", async (request) => {
     requestInformer(request.request.ip, request.request.headers.get("user-agent"), request.request.url.pathname, request.request.method);
     request.response.type = "application/json"
@@ -54,10 +54,9 @@ const requestsHandler = new Router()
               }
             }
           }
-          const masterKeyGen: string = (customAlphabet('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_+=@', 36))();
-          await config.updateConfig({name: "masterKey", value: bcrypt.hashSync(masterKeyGen)});
+          const masterKey = await secrets.masterKey.generate();
           await config.updateConfig({name: "setup", value: true});
-          request.response.body = {status: "success", masterKey: masterKeyGen};
+          request.response.body = {status: "success", masterKey: masterKey};
           console.log(yellow(bold("(Setup)")), "Setup finished successfully!");
           return
         // deno-lint-ignore no-empty
