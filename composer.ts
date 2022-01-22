@@ -16,7 +16,7 @@
 
 import { render } from 'https://deno.land/x/mustache_ts/mustache.ts';
 import { DOMParser, Document } from "https://deno.land/x/deno_dom/deno-dom-wasm.ts";
-import * as config from "./config.ts"
+import { config } from "./config.ts"
 
 export class composer {
     static setup = async function() {

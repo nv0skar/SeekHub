@@ -16,7 +16,7 @@
 
 import {bold, cyan, green, yellow, white} from "https://deno.land/std@0.118.0/fmt/colors.ts";
 import { Application, Router } from "https://deno.land/x/oak/mod.ts";
-import * as config from "./config.ts"
+import { config, configStructure, setupKeys} from "./config.ts"
 import { secrets } from "./secrets.ts"
 import { renderer } from "./utils.ts"
 
@@ -41,16 +41,16 @@ const requestsHandler = new Router()
       console.log(yellow(bold("(Setup)")), "Setup data submitted!");
       if (request.request.body().type == "json") {
         try {
-          const dataParsed: config.configStructure[] = await request.request.body().value;
-          for (const i in config.setupKeys) {
+          const dataParsed: configStructure[] = await request.request.body().value;
+          for (const i in setupKeys) {
             for (const o in dataParsed) {
-              if (dataParsed[o].name == config.setupKeys[i]) {
+              if (dataParsed[o].name == setupKeys[i]) {
                 if (dataParsed[o].value == "") {
-                  console.log(yellow(bold("(Setup)")), `The data sent in the ${config.setupKeys[i]} value wasn't valid!`);
+                  console.log(yellow(bold("(Setup)")), `The data sent in the ${setupKeys[i]} value wasn't valid!`);
                   request.response.status = 500;
                   request.response.body = {status: "failed"};
                 }
-                await config.updateConfig({name: config.setupKeys[i], value: (dataParsed[o].value ?? config.getData(config.setupKeys[i]))}, false);
+                await config.updateConfig({name: setupKeys[i], value: (dataParsed[o].value ?? config.getData(setupKeys[i]))}, false);
               }
             }
           }
@@ -72,10 +72,10 @@ async function main() {
   console.log(white(bold("--- SeekHub ---")));
   console.log(cyan("Loading configs from file..."));
   await config.fetchConfig();
-  console.log(green(bold(`Listening on: ${config.server.hostname}:${config.server.port}!`)));
+  console.log(green(bold(`Listening on: ${config.getData("hostname")}:${config.getData("port")}!`)));
   const appServer = new Application()
     .use(requestsHandler.routes())
-  await appServer.listen({hostname: config.server.hostname, port: config.server.port})
+  await appServer.listen({hostname: (config.getData("hostname") as string), port: (config.getData("port") as number)})
 }
 
-main();
+main(); // Let's go!

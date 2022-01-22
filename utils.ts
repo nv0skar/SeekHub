@@ -25,3 +25,16 @@ export class renderer {
         return (await composer.setup()).toString();
     }
 }
+
+export class special {
+    static formatNavbar(navbarText: string) {
+        let buff1 = ""; let buff2 = "";
+        for (let i = 0, encountered = false; i < navbarText.length; i++) {
+            const char = navbarText.charAt(i);
+            if (char == " ") { encountered = true; continue }
+            if (!encountered) buff1 += char;
+            else buff2 += char;
+        }
+        return [buff1, buff2]
+    }
+}

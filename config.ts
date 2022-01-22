@@ -15,78 +15,72 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import {red, cyan} from "https://deno.land/std@0.118.0/fmt/colors.ts";
+import { special } from "./utils.ts"
 
-export const server = {hostname: "127.0.0.1", port: 2000}
+const file2SaveConfig = "./config.json";
+export const idGenDict = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_+=@";
 
-export const configKeys = ["setup", "title", "name", "navTitle", "categories", "items", "extraInfo", "legalNotice", "masterKey", "tempKey", "sessionTime"];
+export const configKeys = ["hostname", "port", "setup", "title", "name", "navTitle", "categories", "items", "extraInfo", "legalNotice", "masterKey", "tempKey", "sessionTime"];
 export const setupKeys = ["title", "name", "navTitle", "legalNotice"];
-
 export interface configStructure {
     name:string;
     value:boolean | string | number | string[] | {tag: string, name: string}[] | {id: number, type: string, image: string, name: string, description: string, price: string, allergens: string}[] | {text: string}[];
 }
 
-const file2SaveConfig = "./config.json"
+export class config {
+    static data: configStructure[] = [
+        {name: "hostname", value: "127.0.0.1"},
+        {name: "port", value: 2000},
+        {name: "setup", value: false}, 
+        {name: "title", value: ""}, 
+        {name: "name", value: ""}, 
+        {name: "navTitle", value: ""},
+        {name: "categories", value: []},
+        {name: "items", value: []},
+        {name: "extraInfo", value: []},
+        {name: "legalNotice", value: ""},
+        {name: "masterKey", value: ""}
+    ];
 
-export async function fetchConfig() {
-    try {
-        const retrievedConfigFile: configStructure[] = JSON.parse(await Deno.readTextFile(file2SaveConfig));
-        data = retrievedConfigFile;
-        return true;
-    } catch {
-        console.log(red("There was an error while trying to load config data!"), cyan("So regenerating the file..."));
-        await updateConfig(undefined, false)
-    }
-}
-
-export async function updateConfig(data2Update: configStructure | undefined, fetch=true) {
-    if (data2Update != undefined)
-    for (const dataIndex in data) {
-        if (data[dataIndex].name == data2Update.name) {
-            try {
-                data[dataIndex].value = data2Update.value;
-                await Deno.writeTextFile(file2SaveConfig, JSON.stringify(data));
-            } catch(e) {
-                console.log(red(e));
-            }
-            break
-        }
-    } else {
+    static async fetchConfig() {
         try {
-            await Deno.writeTextFile(file2SaveConfig, JSON.stringify(data));
-        } catch(e) {
-            console.log(red("Error:"), e);
+            const retrievedConfigFile: configStructure[] = JSON.parse(await Deno.readTextFile(file2SaveConfig));
+            config.data = retrievedConfigFile;
+            return true;
+        } catch {
+            console.log(red("There was an error while trying to load config data!"), cyan("So regenerating the file..."));
+            await config.updateConfig(undefined, false)
         }
     }
-    if (fetch) await fetchConfig();
-}
-
-export function getData(key:string) {
-    for (const dataIndex in data) {
-        if (data[dataIndex].name == key) {
-            if (data[dataIndex].name == "navTitle") {
-                let buff1 = ""; let buff2 = "";
-                for (let i = 0, encountered = false; i < (data[dataIndex].value as string).length; i++) {
-                    const char = (data[dataIndex].value as string).charAt(i);
-                    if (char == " ") { encountered = true; continue }
-                    if (!encountered) buff1 += char;
-                    else buff2 += char;
+    
+    static async updateConfig(data2Update: configStructure | undefined, fetch=true) {
+        if (data2Update != undefined)
+        for (const dataIndex in config.data) {
+            if (config.data[dataIndex].name == data2Update.name) {
+                try {
+                    config.data[dataIndex].value = data2Update.value;
+                    await Deno.writeTextFile(file2SaveConfig, JSON.stringify(config.data));
+                } catch(e) {
+                    console.log(red(e));
                 }
-                return [buff1, buff2]
+                break
             }
-            return data[dataIndex].value;
+        } else {
+            try {
+                await Deno.writeTextFile(file2SaveConfig, JSON.stringify(config.data));
+            } catch(e) {
+                console.log(red("Error:"), e);
+            }
+        }
+        if (fetch) await config.fetchConfig();
+    }
+    
+    static getData(key:string) {
+        for (const dataIndex in config.data) {
+            if (config.data[dataIndex].name == key) {
+                if (config.data[dataIndex].name == "navTitle") return special.formatNavbar((config.data[dataIndex].value as string));
+                return config.data[dataIndex].value;
+            }
         }
     }
 }
-
-export let data: configStructure[] = [
-    {name: "setup", value: false}, 
-    {name: "title", value: ""}, 
-    {name: "name", value: ""}, 
-    {name: "navTitle", value: ""},
-    {name: "categories", value: []},
-    {name: "items", value: []},
-    {name: "extraInfo", value: []},
-    {name: "legalNotice", value: ""},
-    {name: "masterKey", value: ""}
-];
