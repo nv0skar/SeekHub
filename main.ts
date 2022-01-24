@@ -33,11 +33,10 @@ const requestsHandler = new Router()
       request.response.body = await renderer.main();
     }
   })
-
-  .post("/", async (request) => {
-    requestInformer(request.request.ip, request.request.headers.get("user-agent"), request.request.url.pathname, request.request.method);
-    request.response.type = "application/json"
+  .post("/setup", async (request) => {
     if (!config.getData("setup")) {
+      requestInformer(request.request.ip, request.request.headers.get("user-agent"), request.request.url.pathname, request.request.method);
+      request.response.type = "application/json"
       console.log(yellow(bold("(Setup)")), "Setup data submitted!");
       if (request.request.body().type == "json") {
         try {

@@ -24,7 +24,7 @@
         const setupData = JSON.stringify($("#setup").serializeArray());
         $.ajax({
           type: "POST",
-          url: "/",
+          url: "/setup",
           data: setupData,
           success: function(data){
             const elementsForm = ["title", "name", "navTitle", "legalNotice"]
