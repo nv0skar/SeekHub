@@ -14,15 +14,31 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import {bold, yellow} from "https://deno.land/std@0.118.0/fmt/colors.ts";
+import { showRenderTime } from "./config.ts"
 import { composer } from "./composer.ts";
 
+const renderInformer = (pageRendered:string, initialTime:number) => console.log(yellow(bold("(Renderer)")), `Rendered '${pageRendered}'. Elapsed time: ${((Date.now())-initialTime)}ms`);
+
+const mainRenderer = new composer.main;
+
 export class renderer {
-    static async main() {
-        return (await composer.main.compose()).toString();
+    static main = class {
+        static clearMasterPool = () => mainRenderer.clearMasterPool();
+
+        static async render() {
+            const renderStartTime = Date.now();
+            const render = (await mainRenderer.compose()).toString();
+            if (showRenderTime) renderInformer("Main", renderStartTime);
+            return (render);
+        }
     }
 
     static async setup() {
-        return (await composer.setup()).toString();
+        const renderStartTime = Date.now();
+        const render = (await composer.setup()).toString();
+        if (showRenderTime) renderInformer("Setup", renderStartTime);
+        return (render);
     }
 }
 

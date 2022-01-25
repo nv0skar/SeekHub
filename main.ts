@@ -16,7 +16,7 @@
 
 import {bold, cyan, green, yellow, white} from "https://deno.land/std@0.118.0/fmt/colors.ts";
 import { Application, Router } from "https://deno.land/x/oak/mod.ts";
-import { config, configStructure, setupKeys} from "./config.ts"
+import { config, configStructure, setupKeys } from "./config.ts"
 import { secrets } from "./secrets.ts"
 import { renderer } from "./utils.ts"
 
@@ -30,7 +30,7 @@ const requestsHandler = new Router()
       console.log(yellow(bold("(Setup)")), "Setup page was returned instead of the main page!")
       request.response.body = await renderer.setup();
     } else {
-      request.response.body = await renderer.main();
+      request.response.body = await renderer.main.render();
     }
   })
   .post("/setup", async (request) => {
@@ -43,8 +43,8 @@ const requestsHandler = new Router()
           const dataParsed: configStructure[] = await request.request.body().value;
           for (const i in setupKeys) {
             for (const o in dataParsed) {
-              if (dataParsed[o].name == setupKeys[i]) {
-                if (dataParsed[o].value == "") {
+              if (dataParsed[o].name === setupKeys[i]) {
+                if (dataParsed[o].value === "") {
                   console.log(yellow(bold("(Setup)")), `The data sent in the ${setupKeys[i]} value wasn't valid!`);
                   request.response.status = 500;
                   request.response.body = {status: "failed"};
