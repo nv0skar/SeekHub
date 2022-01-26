@@ -14,11 +14,11 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import {bold, cyan, green, yellow, white} from "https://deno.land/std@0.118.0/fmt/colors.ts";
+import { bold, green, yellow, white } from "https://deno.land/std@0.118.0/fmt/colors.ts";
 import { Application, Router } from "https://deno.land/x/oak/mod.ts";
 import { config, configStructure, setupKeys } from "./config.ts"
 import { secrets } from "./secrets.ts"
-import { renderer } from "./utils.ts"
+import { renderer, cli } from "./utils.ts"
 
 const requestInformer = (origin:string, userAgent: string | null, route: string | null, method:string) => console.log(yellow(bold("(Server)")), `Request from '${origin ?? "Unknown"}' with user-agent '${(userAgent ?? "Unknown")}' to '${(route ?? "Unknown")}' with method '${method}'`);
 
@@ -68,12 +68,11 @@ const requestsHandler = new Router()
   })
 
 async function main() {
+  await config.fetchConfig(); // Fetch configs from file
   console.log(white(bold("--- SeekHub ---")));
-  console.log(cyan("Loading configs from file..."));
-  await config.fetchConfig();
+  await cli.parse() // Parse args
   console.log(green(bold(`Listening on: ${config.getData("hostname")}:${config.getData("port")}!`)));
-  const appServer = new Application()
-    .use(requestsHandler.routes())
+  const appServer = new Application().use(requestsHandler.routes())
   await appServer.listen({hostname: (config.getData("hostname") as string), port: (config.getData("port") as number)})
 }
 

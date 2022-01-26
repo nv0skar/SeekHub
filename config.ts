@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import {red, cyan} from "https://deno.land/std@0.118.0/fmt/colors.ts";
+import { red, cyan } from "https://deno.land/std@0.118.0/fmt/colors.ts";
 import { renderer, special } from "./utils.ts"
 
 const file2SaveConfig = "./config.json";
