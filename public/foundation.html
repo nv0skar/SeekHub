@@ -17,17 +17,6 @@
 -->
 
 <style>
-li {
-  font-weight: 900;
-}
-li span {
-  font-weight: 700;
-}
-
-h2 hr {
-  margin-top: 0px;
-}
-
 #mainSection {
   position: relative;
   margin-top: -26px;
@@ -36,14 +25,16 @@ h2 hr {
 align-content: initial;
 }
 #footerNotices {
+  background-color: rgba(0, 0, 0, 0);
   width: 75%;
 }
 .navbar-item.resize {
-  text-align: center;
+  text-align: center !important;
   font-weight: 600 !important;
 }
-.navbar-item.hoverWithBlack:hover {
-  color: black;
+.navbar-item:hover {
+  color: black !important;
+  background-color: rgba(0, 0, 0, 0) !important;
 }
 
 @media screen and (max-width: 1024px) {
@@ -94,9 +85,6 @@ align-content: initial;
   footer {
     background-color: black !important;
   }
-  #extraInfoSuperContainer {
-    background-color: rgb(182, 182, 182) !important;
-  }
 }
 
 @media (prefers-color-scheme: light) {
@@ -109,25 +97,38 @@ align-content: initial;
   footer {
     background-color: #f5f5f5 !important;
   }
-  #extraInfoSuperContainer {
-    background-color: rgb(219, 219, 219) !important;
-  }
 }
 
 .placeholder {
-position: absolute;
-left: 50%;
-top: 50%;
-transform: translate(-50%, -50%);
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
 }
 
 .subtitle {
   margin-bottom: -22px !important;
 }
 
-h1, h2, span {
+h1, h2, li, span {
   mix-blend-mode: difference;
   filter: invert(100%);
+}
+
+hr {
+  height: 1px;
+}
+
+li {
+  font-weight: 600;
+}
+li span {
+  color: grey;
+  font-weight: 500;
+}
+
+h2 hr {
+  margin-top: 0px;
 }
 
 div .productContainer {

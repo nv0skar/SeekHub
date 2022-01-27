@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import { bold, cyan, yellow } from "https://deno.land/std@0.118.0/fmt/colors.ts";
+import { bold, red, cyan, yellow } from "https://deno.land/std@0.118.0/fmt/colors.ts";
 import { parse } from "https://deno.land/x/tinyargs/mod.ts"
 import { config, showRenderTime } from "./config.ts"
 import { composer } from "./composer.ts";
@@ -50,7 +50,9 @@ export class cli {
     static async updatePort(port:number) { await config.updateConfig({name: "port", value: (port as number)}); }
 
     static async parse() {
-        const parsedArgs = parse(Deno.args, [{name: "help", flags: ["h"], type: Boolean, stop: true}, {name: "hostname", flags: [], type: String, stop: false}, {name: "port", flags: [], type: Number, stop: false}]);
+        let parsedArgs;
+        try { parsedArgs = parse(Deno.args, [{name: "help", flags: ["h"], type: Boolean, stop: true}, {name: "hostname", flags: [], type: String, stop: false}, {name: "port", flags: [], type: Number, stop: false}]); }
+        catch { console.log(red("Invalid argument passed!")); Deno.exit(1); }
         if (parsedArgs.help) cli.showHelp();
         if (parsedArgs.hostname != undefined) await cli.updateHostname(parsedArgs.hostname);
         if (parsedArgs.port != undefined) await cli.updatePort(parsedArgs.port);
