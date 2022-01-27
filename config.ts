@@ -19,7 +19,6 @@ import { renderer, special } from "./utils.ts"
 
 const file2SaveConfig = "./config.json";
 const netDefaults: [string, number] = ["127.0.0.1", 2000];
-export const showRenderTime = false;
 export const idGenDict = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_+=@";
 
 export const configKeys = ["hostname", "port", "setup", "title", "name", "navTitle", "categories", "items", "extraInfo", "legalNotice", "masterKey", "tempKey", "sessionTime"];
