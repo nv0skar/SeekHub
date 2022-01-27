@@ -45,25 +45,38 @@ export class renderer {
 }
 
 export class cli {
-    static showHelp = () => { console.log(bold("Usage:"), `\n${cyan(" --help (-h)")}: Show this message (If this is passed, any other argument passed won't take effect!)`, `\n${cyan(" --hostname")}: Set the hostname (This will replace the default hostname)`, `\n${cyan(" --port")}: Set the port to listen (This will replace the default port)`, `\n${cyan(" --renderTime")}: Show the amount of time elapsed rendering`); Deno.exit(0); }
+    static showHelp = () => { console.log(bold("Usage:"), `\n${cyan(" --help (-h)")}: Show this message (If this is passed, any other argument passed won't take effect!)`, `\n${cyan(" --hostname")}: Set the hostname (This will replace the default hostname)`, `\n${cyan(" --port")}: Set the port to listen (This will replace the default port)`, `\n${cyan(" --renderTime")}: Show the amount of time elapsed rendering`, `\n${cyan(" --debug")}: Activate debug messages :o`); Deno.exit(0); }
 
-    static async updateHostname(hostname:string) { await config.updateConfig({name: "hostname", value: (hostname as string)}); }
-    static async updatePort(port:number) { await config.updateConfig({name: "port", value: (port as number)}); }
+    static async updateHostname(hostname:string) { await config.updateConfig(["hostname", (hostname as string)]); }
+    static async updatePort(port:number) { await config.updateConfig(["port", (port as number)]); }
+
+    static args2Parse: {name:string, flags:string[], type: BooleanConstructor | StringConstructor | NumberConstructor, stop:boolean}[] = [{name: "help", flags: ["h"], type: Boolean, stop: true}, {name: "hostname", flags: [], type: String, stop: false}, {name: "port", flags: [], type: Number, stop: false}, {name: "renderTime", flags: [], type: Boolean, stop: false}, {name: "debug", flags: [], type: Boolean, stop: false}];
 
     static async parse() {
-        let parsedArgs;
-        try { parsedArgs = parse(Deno.args, [{name: "help", flags: ["h"], type: Boolean, stop: true}, {name: "hostname", flags: [], type: String, stop: false}, {name: "port", flags: [], type: Number, stop: false}, {name: "renderTime", flags: [], type: Boolean, stop: false}]); }
-        catch { console.log(red("Invalid argument passed!")); Deno.exit(1); }
+        const parsedArgs = parse(Deno.args, cli.args2Parse)
         if (parsedArgs.help) cli.showHelp();
         if (parsedArgs.hostname != undefined) await cli.updateHostname(parsedArgs.hostname);
         if (parsedArgs.port != undefined) await cli.updatePort(parsedArgs.port);
-        if (parsedArgs.renderTime != undefined) renderer.showRenderTime = true;
+        if (parsedArgs.renderTime) renderer.showRenderTime = true;
     }
+
+    static preParse() {
+        let parsedArgs;
+        try { parsedArgs = parse(Deno.args, cli.args2Parse) }
+        catch { console.log(red("Invalid argument passed!")); Deno.exit(1); }
+        if (parsedArgs.debug) debug.status = true;
+    }
+}
+
+export class debug {
+    static status = false;
+
+    static tell = (text:string) => { if (debug.status) console.log(yellow(bold("(Debug)")), text) }
 }
 
 export class special {
     static formatNavbar(navbarText: string) {
-        let buff1 = ""; let buff2 = "";
+        let buff1 = "", buff2 = "";
         for (let i = 0, encountered = false; i < navbarText.length; i++) {
             const char = navbarText.charAt(i);
             if (char == " ") { encountered = true; continue }

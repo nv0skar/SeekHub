@@ -21,6 +21,7 @@ import { cli } from "./utils.ts"
 
 
 async function main() {
+  cli.preParse() // Preparse args
   await config.fetchConfig(); // Fetch configs from file
   console.log(white(bold("--- SeekHub ---")));
   await cli.parse() // Parse args

@@ -15,32 +15,27 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import { red, cyan } from "https://deno.land/std@0.118.0/fmt/colors.ts";
-import { renderer, special } from "./utils.ts"
+import { renderer, special, debug as debugHandler } from "./utils.ts"
+
+const netDefaults: [string, number] = ["127.0.0.1", 2000];
 
 const file2SaveConfig = "./config.json";
-const netDefaults: [string, number] = ["127.0.0.1", 2000];
-export const idGenDict = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_+=@";
-
 export const configKeys = ["hostname", "port", "setup", "title", "name", "navTitle", "categories", "items", "extraInfo", "legalNotice", "masterKey", "tempKey", "sessionTime"];
-export const setupKeys = ["title", "name", "navTitle", "legalNotice"];
-export interface configStructure {
-    name:string;
-    value:boolean | string | number | string[] | {tag: string, name: string}[] | {id: number, type: string, image: string, name: string, description: string, price: string, allergens: string}[] | {text: string}[] | undefined;
-}
+export type configStructure = [string, boolean | string | number | string[] | {tag: string, name: string}[] | {id: number, type: string, image: string, name: string, description: string, price: string, allergens: string}[] | {text: string}[] | undefined];
 
 export class config {
     static data: configStructure[] = [
-        {name: "hostname", value: "127.0.0.1"},
-        {name: "port", value: 2000},
-        {name: "setup", value: false}, 
-        {name: "title", value: ""}, 
-        {name: "name", value: ""}, 
-        {name: "navTitle", value: ""},
-        {name: "categories", value: []},
-        {name: "items", value: []},
-        {name: "extraInfo", value: []},
-        {name: "legalNotice", value: ""},
-        {name: "masterKey", value: ""}
+        ["hostname", "127.0.0.1"],
+        ["port", 2000],
+        ["setup", false], 
+        ["title", ""], 
+        ["name", ""], 
+        ["navTitle", ""],
+        ["categories", []],
+        ["items", []],
+        ["extraInfo", []],
+        ["legalNotice", ""],
+        ["masterKey", ""]
     ];
 
     static async fetchConfig() {
@@ -52,40 +47,41 @@ export class config {
                 for (const dataIndex in config.data) {
                     try {
                         for (const configKeysNotInDataKey in configKeysNotInData) {
-                            if (configKeysNotInData[configKeysNotInDataKey] == config.data[dataIndex].name) delete configKeysNotInData[configKeysNotInDataKey];
+                            if (configKeysNotInData[configKeysNotInDataKey] == config.data[dataIndex][0]) delete configKeysNotInData[configKeysNotInDataKey];
                         }
                     // deno-lint-ignore no-empty
                     } catch {}
                 }
-                for (const configKeysNotInDataKey in configKeysNotInData) config.data.push({name: configKeysNotInData[configKeysNotInDataKey], value: undefined});
+                for (const configKeysNotInDataKey in configKeysNotInData) config.data.push([configKeysNotInData[configKeysNotInDataKey], undefined]);
                 await config.updateConfig(undefined, false)
             }
             renderer.main.clearMasterPool();
             return true;
-        } catch {
-            console.log(red("There was an error while trying to load config data!"), cyan("So regenerating the file..."));
-            await config.updateConfig(undefined, false)
-            renderer.main.clearMasterPool();
+        } catch (error) {
+            if (error instanceof Deno.errors.NotFound ) {
+                debugHandler.tell(cyan("Regenerating the config file..."));
+                await config.updateConfig(undefined, false); renderer.main.clearMasterPool();
+            }
         }
     }
     
     static async updateConfig(data2Update: configStructure | undefined, fetch=true) {
         if (data2Update != undefined)
         for (const dataIndex in config.data) {
-            if (config.data[dataIndex].name === data2Update.name) {
+            if (config.data[dataIndex][0] === data2Update[0]) {
                 try {
-                    config.data[dataIndex].value = data2Update.value;
+                    config.data[dataIndex][1] = data2Update[1];
                     await Deno.writeTextFile(file2SaveConfig, JSON.stringify(config.data));
-                } catch(e) {
-                    console.log(red(e));
+                } catch (e) {
+                    debugHandler.tell(red(`Error while trying to update config file (${e})`));
                 }
                 break
             }
         } else {
             try {
                 await Deno.writeTextFile(file2SaveConfig, JSON.stringify(config.data));
-            } catch(e) {
-                console.log(red("Error:"), e);
+            } catch (e) {
+                debugHandler.tell(red(`Error while trying to update config file (${e})`));
             }
         }
         if (fetch) await config.fetchConfig();
@@ -93,12 +89,12 @@ export class config {
     
     static getData(key:string) {
         for (const dataIndex in config.data) {
-            if (config.data[dataIndex].name === key) {
-                if (config.data[dataIndex].name === "navTitle") return special.formatNavbar((config.data[dataIndex].value as string));
-                if (config.data[dataIndex].name == "hostname" && config.data[dataIndex].value == undefined) return netDefaults[0];   
-                if (config.data[dataIndex].name == "port" && config.data[dataIndex].value == undefined) return netDefaults[1];
-                if (config.data[dataIndex].name == "setup" && config.data[dataIndex].value == undefined) return false;
-                return config.data[dataIndex].value;
+            if (config.data[dataIndex][0] === key) {
+                if (config.data[dataIndex][0] === "navTitle") return special.formatNavbar((config.data[dataIndex][1] as string));
+                if (config.data[dataIndex][0] == "hostname" && config.data[dataIndex][1] == undefined) return netDefaults[0];   
+                if (config.data[dataIndex][0] == "port" && config.data[dataIndex][1] == undefined) return netDefaults[1];
+                if (config.data[dataIndex][0] == "setup" && config.data[dataIndex][1] == undefined) return false;
+                return config.data[dataIndex][1];
             }
         }
     }

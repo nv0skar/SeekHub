@@ -16,13 +16,15 @@
 
 import { customAlphabet } from "https://deno.land/x/nanoid/customAlphabet.ts";
 import * as bcrypt from "https://deno.land/x/bcrypt/mod.ts";
-import { config, idGenDict} from "./config.ts"
+import { config } from "./config.ts"
+
+const idGenDict = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_+=@";
 
 export class secrets {
     static masterKey = class {
         static async generate(save=true) {
             const masterKeyGen: string = (customAlphabet(idGenDict, 36))();
-            if (save) await config.updateConfig({name: "masterKey", value: bcrypt.hashSync(masterKeyGen)});
+            if (save) await config.updateConfig(["masterKey", bcrypt.hashSync(masterKeyGen)]);
             return masterKeyGen
         }
     }
@@ -39,8 +41,8 @@ export class secrets {
             if (keyMatches) {
                 const tempKeyGen: string = (customAlphabet(idGenDict, 36))();
                 if (save) {
-                    await config.updateConfig({name: "tempKey", value: tempKeyGen});
-                    await config.updateConfig({name: "sessionTime", value: (Math.floor(Date.now() / 1000))});
+                    await config.updateConfig(["tempKey", tempKeyGen]);
+                    await config.updateConfig(["sessionTime", (Math.floor(Date.now() / 1000))]);
                 }
                 return tempKeyGen
             } else return

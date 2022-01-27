@@ -16,7 +16,7 @@
 
 import { bold, yellow } from "https://deno.land/std@0.118.0/fmt/colors.ts";
 import { Application, Router, RouterContext } from "https://deno.land/x/oak/mod.ts";
-import { config, configStructure, setupKeys } from "./config.ts"
+import { config } from "./config.ts"
 import { secrets } from "./secrets.ts"
 import { renderer } from "./utils.ts"
 
@@ -55,21 +55,22 @@ export class handler {
                         console.log(yellow(bold("(Setup)")), "Setup data submitted!");
                         if (request.request.body().type == "json") {
                             try {
-                                const dataParsed: configStructure[] = await request.request.body().value;
-                                for (const i in setupKeys) {
+                                const values2Retrieve = ["title", "name", "navTitle", "legalNotice"];
+                                const dataParsed: {name:string, value:string}[] = await request.request.body().value;
+                                for (const i in values2Retrieve) {
                                     for (const o in dataParsed) {
-                                        if (dataParsed[o].name === setupKeys[i]) {
+                                        if (dataParsed[o].name === values2Retrieve[i]) {
                                             if (dataParsed[o].value === "") {
-                                                console.log(yellow(bold("(Setup)")), `The data sent in the ${setupKeys[i]} value wasn't valid!`);
+                                                console.log(yellow(bold("(Setup)")), `The data sent in the ${values2Retrieve[i]} value wasn't valid!`);
                                                 request.response.status = 500;
                                                 request.response.body = {status: "failed"};
                                             }
-                                            await config.updateConfig({name: setupKeys[i], value: (dataParsed[o].value ?? config.getData(setupKeys[i]))}, false);
+                                            await config.updateConfig([values2Retrieve[i], (dataParsed[o].value ?? config.getData(values2Retrieve[i]))], false);
                                         }
                                     }
                                 }
                                 const masterKey = await secrets.masterKey.generate();
-                                await config.updateConfig({name: "setup", value: true});
+                                await config.updateConfig(["setup", true]);
                                 request.response.body = {status: "success", masterKey: masterKey};
                                 console.log(yellow(bold("(Setup)")), "Setup finished successfully!");
                                 return
@@ -93,8 +94,8 @@ export class handler {
     }
 
     private route2Route() {
-        this.routes.get("/", this.endpoints.internal.getMethod.slashRoute);
-        this.routes.post("/setup", this.endpoints.internal.postMethod.slashSetupRoute);
+        this.routes.get("/", this.endpoints.internal.getMethod.slashRoute)
+        .post("/setup", this.endpoints.internal.postMethod.slashSetupRoute);
     }
 
     public async listen() {

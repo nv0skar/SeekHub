@@ -20,9 +20,9 @@ import { config } from "./config.ts"
 
 export class composer {
     static setup = async function() {
-        const setup = await Deno.readTextFile("./public/elements/setup/setup.html");
-        const foundation = await Deno.readTextFile("./public/elements/setup/foundation.html");
-        const scripts = await Deno.readTextFile("./public/elements/setup/scripts.html");
+        const setup = await Deno.readTextFile("./public/setup/setup.html");
+        const foundation = await Deno.readTextFile("./public/setup/foundation.html");
+        const scripts = await Deno.readTextFile("./public/setup/scripts.html");
 
         // deno-lint-ignore prefer-const
         let composition = new DOMParser().parseFromString(setup, "text/html")!;
