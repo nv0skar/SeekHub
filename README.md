@@ -24,4 +24,4 @@ If you want, you can contribute to make this a better project!
 ## <a name="development"></a>Development 🧑‍💻
 ### <a name="developmentTODO"></a>TODO 🛸
 - [ ] Implement the dashboard
-- [ ] Implement REST API
+- [x] Implement REST API

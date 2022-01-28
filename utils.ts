@@ -45,18 +45,20 @@ export class renderer {
 }
 
 export class cli {
-    static showHelp = () => { console.log(bold("Usage:"), `\n${cyan(" --help (-h)")}: Show this message (If this is passed, any other argument passed won't take effect!)`, `\n${cyan(" --hostname")}: Set the hostname (This will replace the default hostname)`, `\n${cyan(" --port")}: Set the port to listen (This will replace the default port)`, `\n${cyan(" --renderTime")}: Show the amount of time elapsed rendering`, `\n${cyan(" --debug")}: Activate debug messages :o`); Deno.exit(0); }
+    static showHelp = () => { console.log(bold("Usage:"), `\n${cyan(" --help (-h)")}: Show this message (If this is passed, any other argument passed won't take effect!)`, `\n${cyan(" --hostname")}: Set the hostname (Will be saved)`, `\n${cyan(" --port")}: Set the port to listen (Will be saved)`, `\n${cyan(" --publicAPI")}: ${((config.getData("publicAPI") as boolean) ? "Disable":"Activate")} public API (Will be saved)`, `\n${cyan(" --renderTime")}: Show the amount of time elapsed rendering`, `\n${cyan(" --debug")}: Activate debug messages :o`); Deno.exit(0); }
 
-    static async updateHostname(hostname:string) { await config.updateConfig(["hostname", (hostname as string)]); }
-    static async updatePort(port:number) { await config.updateConfig(["port", (port as number)]); }
+    static updateHostname = async (hostname:string) => { await config.updateConfig(["hostname", (hostname as string)]); }
+    static updatePort = async (port:number) => { await config.updateConfig(["port", (port as number)]); }
+    static togglePublicAPIAccess = async () => { await config.updateConfig(["publicAPI", ((config.getData("publicAPI") as boolean) ? false:true)]); }
 
-    static args2Parse: {name:string, flags:string[], type: BooleanConstructor | StringConstructor | NumberConstructor, stop:boolean}[] = [{name: "help", flags: ["h"], type: Boolean, stop: true}, {name: "hostname", flags: [], type: String, stop: false}, {name: "port", flags: [], type: Number, stop: false}, {name: "renderTime", flags: [], type: Boolean, stop: false}, {name: "debug", flags: [], type: Boolean, stop: false}];
+    static args2Parse: {name:string, flags:string[], type: BooleanConstructor | StringConstructor | NumberConstructor, stop:boolean}[] = [{name: "help", flags: ["h"], type: Boolean, stop: true}, {name: "hostname", flags: [], type: String, stop: false}, {name: "port", flags: [], type: Number, stop: false}, {name: "publicAPI", flags: [], type: Boolean, stop: false}, {name: "renderTime", flags: [], type: Boolean, stop: false}, {name: "debug", flags: [], type: Boolean, stop: false}];
 
     static async parse() {
         const parsedArgs = parse(Deno.args, cli.args2Parse)
         if (parsedArgs.help) cli.showHelp();
         if (parsedArgs.hostname != undefined) await cli.updateHostname(parsedArgs.hostname);
         if (parsedArgs.port != undefined) await cli.updatePort(parsedArgs.port);
+        if (parsedArgs.publicAPI) await cli.togglePublicAPIAccess();
         if (parsedArgs.renderTime) renderer.showRenderTime = true;
     }
 
@@ -79,7 +81,7 @@ export class special {
         let buff1 = "", buff2 = "";
         for (let i = 0, encountered = false; i < navbarText.length; i++) {
             const char = navbarText.charAt(i);
-            if (char == " ") { encountered = true; continue }
+            if (char == " ") { if (!encountered) { encountered = true; continue } }
             if (!encountered) buff1 += char;
             else buff2 += char;
         }

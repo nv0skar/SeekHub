@@ -1,0 +1,60 @@
+<!--
+  SeekHub
+  Copyright (C) 2021 ItsTheGuy
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+<script defer>
+    const errorInformer = (data, message) => alert(`Something went wrong 😮\n${message}: ${data.status ? data.status:"No request status"} - ${data.responseText ? data.responseText:"No response data"}`);
+
+    function syncElementInput(from, to) {
+      const fromElement = document.getElementById(from);
+      const toElement = document.getElementById(to);
+      if (toElement.value === "") toElement.value = fromElement.value;
+    }
+    
+    function finishSetup() {
+        event.preventDefault();
+        const setupData = JSON.stringify($("#setup").serializeArray());
+        $.ajax({
+          type: "POST",
+          url: "/setup",
+          data: setupData,
+          success: (data) => {
+            if (data["status"] === undefined || data["status"] === "failed" || data["status"] != "success" || data["id"] == undefined || data["masterKey"] == undefined) {  errorInformer(data, "Unexpected response"); return; }
+            const formElements = ["title", "name", "navTitle", "legalNotice"]
+            for (const i in formElements) {
+              document.getElementById('subtitle').innerHTML = "Now save your master key safely, don't share it with anyone!"
+              document.getElementById(`${formElements[i]}Container`).style.display = "none";
+              document.getElementById(`${formElements[i]}Input`).readOnly = true;
+            }
+            window.onbeforeunload = () => event.preventDefault();
+            document.getElementById("idContainer").style.display = "block";
+            document.getElementById("masterKeyContainer").style.display = "block";
+            document.getElementById("idInput").setAttribute("value", data["id"]);
+            document.getElementById("masterKeyInput").setAttribute("value", data["masterKey"]);
+            document.getElementById("submitButton").onclick = () => {
+              if (confirm("Are you sure you want to continue? You won't be able to obtain the master key later!") == true) { window.onbeforeunload = () => { return }; location.reload(); }
+              else { event.preventDefault() }
+            };
+            document.getElementById("submitButton").setAttribute("value", "Finish!");
+          },
+          error: (error) => { errorInformer(error, "Request error") },
+          dataType: "json",
+          contentType : "application/json"
+        });
+    }
+</script>

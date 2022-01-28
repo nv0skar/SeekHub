@@ -20,22 +20,28 @@ import { renderer, special, debug as debugHandler } from "./utils.ts"
 const netDefaults: [string, number] = ["127.0.0.1", 2000];
 
 const file2SaveConfig = "./config.json";
-export const configKeys = ["hostname", "port", "setup", "title", "name", "navTitle", "categories", "items", "extraInfo", "legalNotice", "masterKey", "tempKey", "sessionTime"];
-export type configStructure = [string, boolean | string | number | string[] | {tag: string, name: string}[] | {id: number, type: string, image: string, name: string, description: string, price: string, allergens: string}[] | {text: string}[] | undefined];
+export const configKeys = ["hostname", "port", "id", "masterKey", "tempKey", "sessionTime", "publicAPI", "setup", "title", "name", "navTitle", "categories", "items", "extraInfo", "legalNotice"];
+export type categoryStructure = {tag: string, name: string};
+export type itemStructure = {id: number, type: string, image: string, name: string, description: string, price: string, allergens: string};
+export type configStructure = [string, boolean | string | number | string[] | categoryStructure[] | itemStructure[] | {text: string}[] | undefined];
 
 export class config {
     static data: configStructure[] = [
         ["hostname", "127.0.0.1"],
         ["port", 2000],
-        ["setup", false], 
+        ["id", ""],
+        ["masterKey", ""],
+        ["tempKey", undefined],
+        ["sessionTime", undefined],
+        ["publicAPI", false],
+        ["setup", false],
         ["title", ""], 
         ["name", ""], 
         ["navTitle", ""],
         ["categories", []],
         ["items", []],
         ["extraInfo", []],
-        ["legalNotice", ""],
-        ["masterKey", ""]
+        ["legalNotice", ""]
     ];
 
     static async fetchConfig() {

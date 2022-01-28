@@ -16,13 +16,13 @@
 
 import { render } from 'https://deno.land/x/mustache_ts/mustache.ts';
 import { DOMParser, Document } from "https://deno.land/x/deno_dom/deno-dom-wasm.ts";
-import { config } from "./config.ts" 
+import { config, categoryStructure, itemStructure } from "./config.ts" 
 
 export class composer {
     static setup = async function() {
-        const setup = await Deno.readTextFile("./public/setup/setup.html");
-        const foundation = await Deno.readTextFile("./public/setup/foundation.html");
-        const scripts = await Deno.readTextFile("./public/setup/scripts.html");
+        const setup = await Deno.readTextFile("./pages/setup/setup.html");
+        const foundation = await Deno.readTextFile("./pages/setup/foundation.html");
+        const scripts = await Deno.readTextFile("./pages/setup/scripts.html");
 
         // deno-lint-ignore prefer-const
         let composition = new DOMParser().parseFromString(setup, "text/html")!;
@@ -35,9 +35,9 @@ export class composer {
 
     static main = class {
         private masterPool:string|undefined = undefined;
-        private mainView:Promise<string> = Deno.readTextFile("./public/main.html");
-        private foundation:Promise<string> = Deno.readTextFile("./public/foundation.html");
-        private scripts:Promise<string> = Deno.readTextFile("./public/scripts.html");
+        private mainView:Promise<string> = Deno.readTextFile("./pages/main.html");
+        private foundation:Promise<string> = Deno.readTextFile("./pages/foundation.html");
+        private scripts:Promise<string> = Deno.readTextFile("./pages/scripts.html");
         private navbarItem = `<a class="navbar-item resize" href="#{{id}}"><span style="vertical-align: super;">{{name}}</span></a>`;
         private superContainer = `<div class="columns" id="columnGroup{{num}}"></div>`;
         private sectionContainer = `<div class="column"><section style="scroll-margin-top: 102px;" id="{{id}}"><h2 class="subtitle" style="font-family: Arial, Helvetica, sans-serif; font-display: swap; font-size: 28px; font-weight: 900;">{{name}}</h2><hr><div id="{{id}}Container"></div></section></div><br>`;
@@ -46,7 +46,7 @@ export class composer {
 
         private renderDynamicComponents(composition: Document) {
             // For each pair of categories add a section
-            const numberOfSectionGroups = Math.round((config.getData("categories") as {tag: string, name: string}[]).length/2);
+            const numberOfSectionGroups = Math.round((config.getData("categories") as categoryStructure[]).length/2);
             for (let i = 0; numberOfSectionGroups > i; i++) {
                 const sectionGroupsElement = new DOMParser().parseFromString(render((this.superContainer), {num: i}).toString(), "text/html")!.documentElement!.outerHTML.toString();
                 composition.documentElement!.getElementById("mainSection")!.innerHTML += sectionGroupsElement;
@@ -55,8 +55,8 @@ export class composer {
             // For each category add a new section to the page
             let actualGroup = 0
             let repetitionsOfGroup = 0
-            for (const i in (config.getData("categories") as {tag: string, name: string}[])) {
-                const elementData = (config.getData("categories") as {tag: string, name: string}[])[i];
+            for (const i in (config.getData("categories") as categoryStructure[])) {
+                const elementData = (config.getData("categories") as categoryStructure[])[i];
                 const navbarElement = new DOMParser().parseFromString(render((this.navbarItem), {id: elementData.tag, name: elementData.name}).toString(), "text/html")!.documentElement!.outerHTML.toString();
                 const sectionElement = new DOMParser().parseFromString(render((this.sectionContainer), {id: elementData.tag, name: elementData.name}).toString(), "text/html")!.documentElement!.outerHTML.toString();
                 composition.documentElement!.getElementById("navbarSection")!.innerHTML += navbarElement;
@@ -68,8 +68,8 @@ export class composer {
             // For each element in menu add a new element to the page
             let lastType2Render = ""
             let numberLastTypeRendered = 0
-            for (const i in (config.getData("items") as {id: number, type: string, image: string, name: string, description: string, price: string, allergens: string}[])) {
-                const elementData =  (config.getData("items") as {id: number, type: string, image: string, name: string, description: string, price: string, allergens: string}[])[i];
+            for (const i in (config.getData("items") as itemStructure[])) {
+                const elementData =  (config.getData("items") as itemStructure[])[i];
                 if (elementData.type != lastType2Render) numberLastTypeRendered = 1;
                 else numberLastTypeRendered += 1;
                 lastType2Render = elementData.type;
