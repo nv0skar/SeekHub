@@ -21,5 +21,5 @@
     const switchVisibility2Placeholder = (id) => document.getElementById("imagePlaceholderProduct" + id).style.display = 'block';
 
     window.onload = () => document.body.scrollTop = Cookies.get('scrollingPosition');
-    window.onbeforeunload = () => document.cookie = `scrollingPosition=${document.body.scrollTop}; max-age=7200`;
-  </script>
+    window.onbeforeunload = () => { document.cookie = `scrollingPosition=${document.body.scrollTop}; max-age=7200`; return};
+</script>

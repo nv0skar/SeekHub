@@ -45,9 +45,50 @@ export class handler {
                         request.response.body = await renderer.main.render();
                     }
                 }
+
+                static async slashManageRoute(request: requestContext) {
+                    handler.utils.requestInformer(request.request.ip, request.request.headers.get("user-agent"), request.request.url.pathname, request.request.method);
+                    request.response.type = "text/html"
+                    if (!config.getData("setup")) {
+                        console.log(yellow(bold("(Setup)")), "Setup page was returned instead of the manager!")
+                        request.response.body = await renderer.setup();
+                    } else {
+                        request.response.body = await renderer.manage();
+                    }
+                }
             }
     
             static postMethod = class {
+                static async slashManageSecretRoute(request: requestContext) {
+                    if (config.getData("setup")) {
+                        handler.utils.requestInformer(request.request.ip, request.request.headers.get("user-agent"), request.request.url.pathname, request.request.method);
+                        request.response.type = "application/json"
+                        if (request.request.body().type == "json") {
+                            try {
+                                const value2Retrieve = "masterKey";
+                                const dataParsed: {name:string, value:string}[] = await request.request.body().value;
+                                for (const o in dataParsed) {
+                                    if (dataParsed[o].name === value2Retrieve) {
+                                        if (dataParsed[o].value === "") {
+                                            console.log(yellow(bold("(Manage)")), `The data sent in the ${value2Retrieve} value wasn't valid!`);
+                                            request.response.status = 500;
+                                            request.response.body = {status: "failed"};
+                                        }
+                                        const tempKey: string | undefined = await secrets.tempKey.generate((dataParsed[o].value as string))
+                                        if (tempKey != undefined) request.response.body = {status: "success", token: tempKey};
+                                        else { request.response.status = 401; request.response.body = {status: "invalid"}; return; }
+                                        console.log(yellow(bold("(Manage)")), "Session created successfully!");
+                                        return
+                                    }
+                                }
+                            // deno-lint-ignore no-empty
+                            } catch {}
+                        }
+                        request.response.status = 500;
+                        request.response.body = {status: "failed"};
+                    }
+                }
+
                 static async slashSetupRoute(request: requestContext) {
                     if (!config.getData("setup")) {
                         handler.utils.requestInformer(request.request.ip, request.request.headers.get("user-agent"), request.request.url.pathname, request.request.method);
@@ -123,8 +164,9 @@ export class handler {
 
     private route2Route() {
         this.routes.get("/", this.endpoints.internal.getMethod.slashRoute)
+        // .get("/manage", this.endpoints.internal.getMethod.slashManageRoute)
+        // .post("/manage/secret", this.endpoints.internal.postMethod.slashManageSecretRoute)
         .post("/setup", this.endpoints.internal.postMethod.slashSetupRoute);
-
         if (config.getData("publicAPI")) {
             {
                 const apiV1 = "/api/v1";

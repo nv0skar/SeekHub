@@ -33,7 +33,7 @@
       <h1 id="title">SeekHub</h1>
       <hr>
       <h2 id="subtitle">Hi! Now you'll be asked some info to setup your brand new menu website!</h2>
-      <form onsubmit="return false;" id="setup">
+      <form onsubmit="finishSetup();" id="setup">
         <div class="form-group" id="nameContainer">
           <label for="name" class="required">Local's name</label>
           <input type="text" class="form-control" name="name" placeholder="Name" required="required" id="nameInput" onchange="syncElementInput('nameInput', 'titleInput');">
@@ -50,20 +50,20 @@
         </div>
         <div class="form-group" id="navTitleContainer">
           <label for="navbarTitle" class="required">Navbar title</label>
-          <input style="margin-bottom: 8px;" type="text" class="form-control" name="navTitle" placeholder="Navbar title" required="required" id="navTitleInput">
+          <input type="text" class="form-control" name="navTitle" placeholder="Navbar title" required="required" id="navTitleInput">
           <div class="form-text">
             This will show up as the navbar title
           </div>
         </div>
         <div class="form-group" id="legalNoticeContainer">
-          <label for="name" class="required">Legal Notices</label>
+          <label for="notice" class="required">Legal Notices</label>
           <input type="text" class="form-control" name="legalNotice" placeholder="Notices" required="required" id="legalNoticeInput">
           <div class="form-text">
             This will show up in the website's footer, just under the local's name
           </div>
         </div>
         <div class="form-group" id="idContainer">
-          <label for="key" class="">Website's ID</label>
+          <label for="id" class="">Website's ID</label>
           <input readonly type="text" class="form-control" name="id" placeholder="Not generated yet" value="" id="idInput">
           <div class="form-text" id="idInstruction">
             This is an unique identifier for your website
@@ -76,7 +76,7 @@
             You'll have to use this key if you want to customize the website after the setup
           </div>
         </div>
-        <input class="btn btn-primary btn-block" type="submit" value="Go!" id="submitButton" onclick="finishSetup();">
+        <input class="btn btn-primary btn-block" type="submit" value="Go!" id="submitButton">
       </form>
     </div>
   </body>

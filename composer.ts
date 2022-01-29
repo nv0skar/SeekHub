@@ -20,12 +20,26 @@ import { config, categoryStructure, itemStructure } from "./config.ts"
 
 export class composer {
     static setup = async function() {
-        const setup = await Deno.readTextFile("./pages/setup/setup.html");
+        const setup = await Deno.readTextFile("./pages/setup/main.html");
         const foundation = await Deno.readTextFile("./pages/setup/foundation.html");
         const scripts = await Deno.readTextFile("./pages/setup/scripts.html");
 
         // deno-lint-ignore prefer-const
         let composition = new DOMParser().parseFromString(setup, "text/html")!;
+
+        composition.documentElement!.getElementById("foundation")!.innerHTML += new DOMParser().parseFromString(foundation.toString(), "text/html")!.documentElement!.outerHTML.toString();
+        composition.documentElement!.getElementById("foundation")!.innerHTML += new DOMParser().parseFromString(scripts.toString(), "text/html")!.documentElement!.outerHTML.toString();
+
+        return composition.documentElement!.outerHTML;        
+    }
+
+    static manage = async function() {
+        const manage = await Deno.readTextFile("./pages/manage/main.html");
+        const foundation = await Deno.readTextFile("./pages/manage/foundation.html");
+        const scripts = await Deno.readTextFile("./pages/manage/scripts.html");
+
+        // deno-lint-ignore prefer-const
+        let composition = new DOMParser().parseFromString(manage, "text/html")!;
 
         composition.documentElement!.getElementById("foundation")!.innerHTML += new DOMParser().parseFromString(foundation.toString(), "text/html")!.documentElement!.outerHTML.toString();
         composition.documentElement!.getElementById("foundation")!.innerHTML += new DOMParser().parseFromString(scripts.toString(), "text/html")!.documentElement!.outerHTML.toString();
@@ -90,7 +104,7 @@ export class composer {
 
         async compose() {
             if (this.masterPool != undefined) return (this.masterPool);
-            const main = render((await this.mainView), {title: (config.getData("title") as string),navTitle1st: (config.getData("navTitle") as string[])[0], navTitle2nd: (config.getData("navTitle") as string[])[1], extraInfoVisibility: ((config.getData("extraInfo") as string[]).length == 0 ? "none":"block"), nameFooter: (config.getData("name") as string), legalNotice: (config.getData("legalNotice") as string)});
+            const main = render((await this.mainView), {title: (config.getData("title") as string), navTitle1st: (config.getData("navTitle") as string[])[0], navTitle2nd: (config.getData("navTitle") as string[])[1], extraInfoVisibility: ((config.getData("extraInfo") as string[]).length == 0 ? "none":"block"), nameFooter: (config.getData("name") as string), legalNotice: (config.getData("legalNotice") as string), id: (config.getData("id") as string)});
     
             // deno-lint-ignore prefer-const
             let composition = new DOMParser().parseFromString(main, "text/html")!;

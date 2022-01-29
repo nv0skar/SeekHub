@@ -36,6 +36,13 @@ export class renderer {
         }
     }
 
+    static async manage() {
+        const renderStartTime = Date.now();
+        const render = (await composer.manage()).toString();
+        if (renderer.showRenderTime) renderer.renderInformer("Manage", renderStartTime);
+        return (render);
+    }
+
     static async setup() {
         const renderStartTime = Date.now();
         const render = (await composer.setup()).toString();

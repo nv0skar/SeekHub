@@ -34,6 +34,8 @@
           url: "/setup",
           data: setupData,
           success: (data) => {
+            window.onbeforeunload = () => event.preventDefault();
+            document.getElementById("setup").onsubmit = () => { return false };
             if (data["status"] === undefined || data["status"] === "failed" || data["status"] != "success" || data["id"] == undefined || data["masterKey"] == undefined) {  errorInformer(data, "Unexpected response"); return; }
             const formElements = ["title", "name", "navTitle", "legalNotice"]
             for (const i in formElements) {
@@ -41,7 +43,6 @@
               document.getElementById(`${formElements[i]}Container`).style.display = "none";
               document.getElementById(`${formElements[i]}Input`).readOnly = true;
             }
-            window.onbeforeunload = () => event.preventDefault();
             document.getElementById("idContainer").style.display = "block";
             document.getElementById("masterKeyContainer").style.display = "block";
             document.getElementById("idInput").setAttribute("value", data["id"]);

@@ -39,10 +39,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
   </head>
   <body style="background-color: rgba(0, 0, 0, 0); scroll-margin-top: 60px;" id="mainContent">
-    <nav class="navbar is-fixed-top" role="navigation" aria-label="main navigation" style="backdrop-filter: blur(56px); -webkit-backdrop-filter: blur(56px); box-shadow: 0 2px 2px 0 rgba(50, 34, 56, 0.2);">
+    <nav class="navbar is-fixed-top" role="navigation" aria-label="main navigation">
       <div class="navbar-brand">
         <div class="navbar-item" style="line-height: 15px;">
-              <a style="font-weight: 900; color: black; text-shadow: -0.5px 0.5px grey;" href="#mainContent"><span id="title1stLine">{{navTitle1st}}</span><br><span id="title2ndLine">{{navTitle2nd}}</span></a>
+              <a href="#mainContent" id="navbarTitle"><span id="title1stLine">{{navTitle1st}}</span><br><span id="title2ndLine">{{navTitle2nd}}</span></a>
           </div>
       </div>
       <div id="navbarSection" style="align-items: stretch; display:flex;"></div>
@@ -52,13 +52,18 @@
   </body>
   <footer class="footer">
     <div id="footerContainer" class="content has-text-centered">
-      <article id="footerNotices" class="message is-link" style="width: 75%; position: relative; left: 50%; transform: translate(-50%, 0%); display: {{extraInfoVisibility}};" id="extraInfo">
+      <article class="message is-link" style="display: {{extraInfoVisibility}};" id="extraInfo">
         <ol id="extraInfoContainer" style="list-style-position: inside; margin: 0px;"></ol>
       </article>
-      <div class="has-text-white" style="font-display: swap; position: relative; line-height: 22px; top: 12px;">
-        <span style="font-size: 36px; font-weight: 900; color: black; line-height: 32px;">{{nameFooter}}</span>
+      <div class="has-text-white" style="position: relative; top: 12px; line-height: 22px;">
+        <span style="font-size: 36px; font-weight: 900; color: black;">{{nameFooter}}</span>
         <br>
         <span style="font-size: 12px; font-weight: 300; color: black;">{{legalNotice}}</span>
+    </div>
+    <div class="manage">
+      <!--<a style="font-size: 12px; color: grey;" href="/manage"><span>Manage</span></a>
+      <br>-->
+      <span style="font-size: 8px; color: grey;">{{id}}</span>
     </div>
   </footer>
 </html>

@@ -15,6 +15,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import { customAlphabet as generateID } from "https://deno.land/x/nanoid/customAlphabet.ts";
+import { encode, decode } from "https://deno.land/std/encoding/base64.ts"
 import * as bcrypt from "https://deno.land/x/bcrypt/mod.ts";
 import { config } from "./config.ts"
 
@@ -33,28 +34,28 @@ export class secrets {
     static masterKey = class {
         static async generate(save=true) {
             const masterKeyGen: string = (generateID(idKeyGenAlphabet, 36))();
-            if (save) await config.updateConfig(["masterKey", bcrypt.hashSync(masterKeyGen)]);
+            if (save) await config.updateConfig(["masterKey", (encode((bcrypt.hashSync(masterKeyGen)) as string))]);
             return masterKeyGen
         }
     }
     
     static tempKey = class {
         static match(tempKey:string) {
-            if (tempKey === (config.getData("tempKey"))) {
+            if ((tempKey as string) === ((new TextDecoder().decode(decode(config.getData("tempKey") as string))) as string)) {
                 return true
             } else return false
         }
 
         static async generate(masterKey:string, save=true) {
-            const keyMatches = await bcrypt.compare(masterKey, (config.getData("masterKey") as string));
+            const keyMatches = await bcrypt.compare((masterKey as string), ((new TextDecoder().decode(decode(config.getData("masterKey") as string))) as string));
             if (keyMatches) {
                 const tempKeyGen: string = (generateID(idKeyGenAlphabet, 36))();
                 if (save) {
-                    await config.updateConfig(["tempKey", tempKeyGen]);
+                    await config.updateConfig(["tempKey", (encode(tempKeyGen) as string)]);
                     await config.updateConfig(["sessionTime", (Math.floor(Date.now() / 1000))]);
                 }
                 return tempKeyGen
-            } else return
+            } return
         }
     }
 }

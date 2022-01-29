@@ -1,0 +1,43 @@
+<!--
+  SeekHub
+  Copyright (C) 2021 ItsTheGuy
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+<!DOCTYPE html>
+<html lang="en" class="has-navbar-fixed-top" style="overflow-x: hidden;" id="main">
+  <head id="foundation">
+    <meta charset="utf-8">
+    <title>SeekHub</title>
+    <link rel="canonical" href="">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/halfmoon@1.1.1/css/halfmoon-variables.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com"> 
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin> 
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body style="background-color: rgba(0, 0, 0, 0); scroll-margin-top: 60px;" id="mainContent">
+    <div id="loginContainer">
+      <h1 id="title">Login</h1>
+      <hr style="margin-bottom: 2rem;">
+      <form onsubmit="login();" id="login">
+        <div class="form-group" id="masterKeyContainer">
+          <input type="password" class="form-control" name="masterKey" placeholder="Master Key" required="required" id="masterKeyInput">
+        </div>
+        <input class="btn btn-primary btn-block" type="submit" value="Login" id="submitButton">
+      </form>
+    </div>
+  </body>
+</html>
