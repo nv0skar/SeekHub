@@ -20,6 +20,8 @@
 <script defer>
     const errorInformer = (data, message) => alert(`Something went wrong 😮\n${message}: ${data.status ? data.status:"No request status"} - ${data.responseText ? data.responseText:"No response data"}`);
 
+    const removeFormValuesFromURL = () => { let goodURLBuffer = ""; for (const char in window.location.href) { if (window.location.href[char] != "?") goodURLBuffer += window.location.href[char]; else window.location.href = goodURLBuffer; } };
+
     function syncElementInput(from, to) {
       const fromElement = document.getElementById(from);
       const toElement = document.getElementById(to);
@@ -34,7 +36,7 @@
           url: "/setup",
           data: setupData,
           success: (data) => {
-            window.onbeforeunload = () => event.preventDefault();
+            window.onbeforeunload = () => { event.preventDefault(); removeFormValuesFromURL(); };
             document.getElementById("setup").onsubmit = () => { return false };
             if (data["status"] === undefined || data["status"] === "failed" || data["status"] != "success" || data["id"] == undefined || data["masterKey"] == undefined) {  errorInformer(data, "Unexpected response"); return; }
             const formElements = ["title", "name", "navTitle", "legalNotice"]
@@ -48,8 +50,7 @@
             document.getElementById("idInput").setAttribute("value", data["id"]);
             document.getElementById("masterKeyInput").setAttribute("value", data["masterKey"]);
             document.getElementById("submitButton").onclick = () => {
-              if (confirm("Are you sure you want to continue? You won't be able to obtain the master key later!") == true) { window.onbeforeunload = () => { return }; location.reload(); }
-              else { event.preventDefault() }
+              if (confirm("Are you sure you want to continue? You won't be able to obtain the master key later!") == true) { window.onbeforeunload = () => { return }; removeFormValuesFromURL(); location.reload(); }
             };
             document.getElementById("submitButton").setAttribute("value", "Finish!");
           },
@@ -58,4 +59,7 @@
           contentType : "application/json"
         });
     }
+
+    window.onload = () => { removeFormValuesFromURL(); document.getElementById("setup").onsubmit = () => { finishSetup(); } };
+    window.onbeforeunload = () => { removeFormValuesFromURL(); };
 </script>

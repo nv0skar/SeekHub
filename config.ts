@@ -23,25 +23,25 @@ const file2SaveConfig = "./config.json";
 export const configKeys = ["hostname", "port", "id", "masterKey", "tempKey", "sessionTime", "publicAPI", "setup", "title", "name", "navTitle", "categories", "items", "extraInfo", "legalNotice"];
 export type categoryStructure = {tag: string, name: string};
 export type itemStructure = {id: number, type: string, image: string, name: string, description: string, price: string, allergens: string};
-export type configStructure = [string, boolean | string | number | string[] | categoryStructure[] | itemStructure[] | {text: string}[] | undefined];
+export type configStructure = [string, boolean | string | number | string[] | categoryStructure[] | itemStructure[] | {text: string}[] | null];
 
 export class config {
     static data: configStructure[] = [
-        ["hostname", "127.0.0.1"],
-        ["port", 2000],
-        ["id", ""],
-        ["masterKey", ""],
-        ["tempKey", undefined],
-        ["sessionTime", undefined],
+        ["hostname", null],
+        ["port", null],
+        ["id", null],
+        ["masterKey", null],
+        ["tempKey", null],
+        ["sessionTime", null],
         ["publicAPI", false],
         ["setup", false],
-        ["title", ""], 
-        ["name", ""], 
-        ["navTitle", ""],
-        ["categories", []],
-        ["items", []],
-        ["extraInfo", []],
-        ["legalNotice", ""]
+        ["title", null], 
+        ["name", null], 
+        ["navTitle", null],
+        ["categories", null],
+        ["items", null],
+        ["extraInfo", null],
+        ["legalNotice", null]
     ];
 
     static async fetchConfig() {
@@ -58,7 +58,7 @@ export class config {
                     // deno-lint-ignore no-empty
                     } catch {}
                 }
-                for (const configKeysNotInDataKey in configKeysNotInData) config.data.push([configKeysNotInData[configKeysNotInDataKey], undefined]);
+                for (const configKeysNotInDataKey in configKeysNotInData) config.data.push([configKeysNotInData[configKeysNotInDataKey], null]);
                 await config.updateConfig(undefined, false)
             }
             renderer.main.clearMasterPool();
@@ -93,15 +93,18 @@ export class config {
         if (fetch) await config.fetchConfig();
     }
     
-    static getData(key:string) {
+    static getData(key:string, force=false) {
         for (const dataIndex in config.data) {
             if (config.data[dataIndex][0] === key) {
                 if (config.data[dataIndex][0] === "navTitle") return special.formatNavbar((config.data[dataIndex][1] as string));
-                if (config.data[dataIndex][0] == "hostname" && config.data[dataIndex][1] == undefined) return netDefaults[0];   
-                if (config.data[dataIndex][0] == "port" && config.data[dataIndex][1] == undefined) return netDefaults[1];
-                if (config.data[dataIndex][0] == "setup" && config.data[dataIndex][1] == undefined) return false;
+                if (config.data[dataIndex][0] === "hostname" && config.data[dataIndex][1] === null) return netDefaults[0];   
+                if (config.data[dataIndex][0] === "port" && config.data[dataIndex][1] === null) return netDefaults[1];
+                if (((config.data[dataIndex][0] === "setup") || (config.data[dataIndex][0] === "publicAPI")) && config.data[dataIndex][1] === null) return false;
+                if (((config.data[dataIndex][0] === "categories") || (config.data[dataIndex][0] === "items") || (config.data[dataIndex][0] === "extraInfo")) && config.data[dataIndex][1] === null) return [];
+                if (config.data[dataIndex][1] === null) {if (!force) throw new Error(`The value of the data requested is not defined! (${config.data[dataIndex][0]})`); else return config.data[dataIndex][1];}
                 return config.data[dataIndex][1];
             }
         }
+        throw new Error(`The data requested doesnt't exist! (${key})`);
     }
 }

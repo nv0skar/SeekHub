@@ -20,6 +20,9 @@
 <script defer>
     const switchVisibility2Placeholder = (id) => document.getElementById("imagePlaceholderProduct" + id).style.display = 'block';
 
-    window.onload = () => document.body.scrollTop = Cookies.get('scrollingPosition');
+    const removeFormValuesFromURL = () => { let goodURLBuffer = ""; for (const char in window.location.href) { if (window.location.href[char] != "?") goodURLBuffer += window.location.href[char]; else window.location.href = goodURLBuffer; } };
+
+
+    window.onload = () => { removeFormValuesFromURL(); document.body.scrollTop = Cookies.get('scrollingPosition'); };
     window.onbeforeunload = () => { document.cookie = `scrollingPosition=${document.body.scrollTop}; max-age=7200`; return};
 </script>

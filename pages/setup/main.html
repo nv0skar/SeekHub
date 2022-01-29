@@ -29,11 +29,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
   </head>
   <body style="background-color: rgba(0, 0, 0, 0); scroll-margin-top: 60px;" id="mainContent">
+    <noscript>
+      <style>#setupContainer { display: none; }</style>
+      <h1 id="opps">Opps! without JS this page doesn't work! 😮</h1>
+    </noscript>
     <div id="setupContainer">
       <h1 id="title">SeekHub</h1>
       <hr>
       <h2 id="subtitle">Hi! Now you'll be asked some info to setup your brand new menu website!</h2>
-      <form onsubmit="finishSetup();" id="setup">
+      <form id="setup">
         <div class="form-group" id="nameContainer">
           <label for="name" class="required">Local's name</label>
           <input type="text" class="form-control" name="name" placeholder="Name" required="required" id="nameInput" onchange="syncElementInput('nameInput', 'titleInput');">

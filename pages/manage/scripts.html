@@ -20,7 +20,9 @@
 <script defer>
     const errorInformer = (data, message) => alert(`Something went wrong 😮\n${message}: ${data.status ? data.status:"No request status"} - ${data.responseText ? data.responseText:"No response data"}`);
 
-    function login() {
+    const removeFormValuesFromURL = () => { let goodURLBuffer = ""; for (const char in window.location.href) { if (window.location.href[char] != "?") goodURLBuffer += window.location.href[char]; else window.location.href = goodURLBuffer; } };
+
+    function auth() {
         event.preventDefault();
         const setupData = JSON.stringify($("#login").serializeArray());
         $.ajax({
@@ -40,4 +42,7 @@
           contentType : "application/json"
         });
     }
+
+    window.onload = () => { removeFormValuesFromURL(); document.getElementById("login").onsubmit = () => { auth(); } };
+    window.onbeforeunload = () => { removeFormValuesFromURL(); };
 </script>

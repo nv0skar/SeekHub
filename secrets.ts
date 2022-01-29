@@ -19,6 +19,7 @@ import { encode, decode } from "https://deno.land/std/encoding/base64.ts"
 import * as bcrypt from "https://deno.land/x/bcrypt/mod.ts";
 import { config } from "./config.ts"
 
+const maxSessionTime = 28800;
 const idGenAlphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 const idKeyGenAlphabet = ((idGenAlphabet + "-_+=@!") as string);
 
@@ -41,21 +42,31 @@ export class secrets {
     
     static tempKey = class {
         static match(tempKey:string) {
-            if ((tempKey as string) === ((new TextDecoder().decode(decode(config.getData("tempKey") as string))) as string)) {
-                return true
-            } else return false
+            if (((config.getData("tempKey", true) as string | null) != null) && (tempKey != "")) {
+                if ((tempKey as string) === ((new TextDecoder().decode(decode(config.getData("tempKey") as string))) as string)) {
+                    if ((Math.floor(Date.now() / 1000)-((config.getData("sessionTime") as  number))<(maxSessionTime as number))) {
+                        return true
+                    } else secrets.tempKey.endSession();
+                }
+            } return false;
         }
 
         static async generate(masterKey:string, save=true) {
-            const keyMatches = await bcrypt.compare((masterKey as string), ((new TextDecoder().decode(decode(config.getData("masterKey") as string))) as string));
-            if (keyMatches) {
-                const tempKeyGen: string = (generateID(idKeyGenAlphabet, 36))();
-                if (save) {
-                    await config.updateConfig(["tempKey", (encode(tempKeyGen) as string)]);
-                    await config.updateConfig(["sessionTime", (Math.floor(Date.now() / 1000))]);
+            if (((config.getData("masterKey") as string | null) != null) && (masterKey != "")) {
+                const keyMatches = await bcrypt.compare((masterKey as string), ((new TextDecoder().decode(decode(config.getData("masterKey") as string))) as string));
+                if (keyMatches) {
+                    if (((config.getData("tempKey", true)) != null) && ((config.getData("sessionTime", true)) != null)) {
+                        if ((Math.floor(Date.now() / 1000)-((config.getData("sessionTime") as number))<(maxSessionTime as number))) return ((new TextDecoder().decode(decode(config.getData("tempKey") as string))) as string)
+                    }
+                    const tempKeyGen: string = (generateID(idKeyGenAlphabet, 36))();
+                    if (save) {
+                        await config.updateConfig(["tempKey", (encode(tempKeyGen) as string)]);
+                        await config.updateConfig(["sessionTime", (Math.floor(Date.now() / 1000))]);
+                    } return tempKeyGen;
                 }
-                return tempKeyGen
-            } return
+            } return;
         }
+
+        static endSession= async () => { await config.updateConfig(["tempKey", null]); await config.updateConfig(["sessionTime", null]); }
     }
 }
