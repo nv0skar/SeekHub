@@ -16,50 +16,62 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 
-<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
-<script defer>
-    const errorInformer = (data, message) => alert(`Something went wrong 😮\n${message}: ${data.status ? data.status:"No request status"} - ${data.responseText ? data.responseText:"No response data"}`);
+<script>
+    const errorInformer = (message) => alert(`${message}`);
 
-    const removeFormValuesFromURL = () => { let goodURLBuffer = ""; for (const char in window.location.href) { if (window.location.href[char] != "?") goodURLBuffer += window.location.href[char]; else window.location.href = goodURLBuffer; } };
-
-    function syncElementInput(from, to) {
+    const syncElementInput = (from, to) => {
       const fromElement = document.getElementById(from);
       const toElement = document.getElementById(to);
       if (toElement.value === "") toElement.value = fromElement.value;
     }
-    
-    function finishSetup() {
-        event.preventDefault();
-        const setupData = JSON.stringify($("#setup").serializeArray());
-        $.ajax({
-          type: "POST",
-          url: "/setup",
-          data: setupData,
-          success: (data) => {
-            window.onbeforeunload = () => { event.preventDefault(); removeFormValuesFromURL(); };
-            document.getElementById("setup").onsubmit = () => { return false };
-            if (data["status"] === undefined || data["status"] === "failed" || data["status"] != "success" || data["id"] == undefined || data["masterKey"] == undefined) {  errorInformer(data, "Unexpected response"); return; }
-            const formElements = ["title", "name", "navTitle", "legalNotice"]
-            for (const i in formElements) {
-              document.getElementById('subtitle').innerHTML = "Now save your master key safely, don't share it with anyone!"
-              document.getElementById(`${formElements[i]}Container`).style.display = "none";
-              document.getElementById(`${formElements[i]}Input`).readOnly = true;
-            }
-            document.getElementById("idContainer").style.display = "block";
-            document.getElementById("masterKeyContainer").style.display = "block";
-            document.getElementById("idInput").setAttribute("value", data["id"]);
-            document.getElementById("masterKeyInput").setAttribute("value", data["masterKey"]);
-            document.getElementById("submitButton").onclick = () => {
-              if (confirm("Are you sure you want to continue? You won't be able to obtain the master key later!") == true) { window.onbeforeunload = () => { return }; removeFormValuesFromURL(); location.reload(); }
-            };
-            document.getElementById("submitButton").setAttribute("value", "Finish!");
-          },
-          error: (error) => { errorInformer(error, "Request error") },
-          dataType: "json",
-          contentType : "application/json"
-        });
+
+    const nextStage = (funcButton, funcKey) => {
+      document.getElementById("submitButton").onclick = () => { funcButton() }
+      document.onkeypress = (key) => { if (key.code === "Enter") funcKey(); }
     }
 
-    window.onload = () => { removeFormValuesFromURL(); document.getElementById("setup").onsubmit = () => { finishSetup(); } };
-    window.onbeforeunload = () => { removeFormValuesFromURL(); };
+    const submitData = (data) => {
+      const request = fetch(new Request('/setup', {method: 'POST', headers: {'content-type': 'application/json'}, body: data}))
+        .then((response) => {
+          if(!response.ok) return;
+          else return response.clone().json();
+        })
+        .catch(() => { return });
+        return request
+    }
+    
+    const finishSetup = async (params) => {
+      const setupData = JSON.stringify([
+        {name: "name", value: (document.getElementById("nameInput").value)},
+        {name: "title", value: (document.getElementById("titleInput").value)},
+        {name: "navTitle", value: (document.getElementById("navTitleInput").value)},
+        {name: "legalNotice", value: (document.getElementById("legalNoticeInput").value)}
+      ]);
+      const response = await submitData(setupData);
+      if (response === undefined) { errorInformer("Opps! Something went wrong 😮"); return; };
+      window.onbeforeunload = () => { event.preventDefault(); };
+      nextStage(() => {}, () => {});
+      if (response["status"] === undefined || response["status"] === "failed" || response["status"] != "success" || response["id"] == undefined || response["masterKey"] == undefined) { errorInformer("Opps! Unexpected response 😮"); return; }
+      const formElements = ["title", "name", "navTitle", "legalNotice"]
+      for (const i in formElements) {
+        document.getElementById(`${formElements[i]}Container`).style.display = "none";
+        document.getElementById(`${formElements[i]}Input`).readOnly = true;
+      }
+      document.getElementById('subtitle').innerHTML = "Now save your master key safely, don't share it with anyone!"
+      const ask2Go = () => { if (confirm("Are you sure you want to continue? You won't be able to obtain the master key later!") == true) { window.onbeforeunload = () => { return }; location.reload(); } }; nextStage(ask2Go, ask2Go);
+      document.getElementById("submitButton").setAttribute("value", "Finish!");
+      document.getElementById("idContainer").style.display = "block";
+      document.getElementById("masterKeyContainer").style.display = "block";
+      document.getElementById("idInput").setAttribute("value", response["id"]);
+      document.getElementById("masterKeyInput").setAttribute("value", response["masterKey"]);
+    }
+
+    window.onload = () => { 
+      nextStage(() => {
+        const formElements = ["title", "name", "navTitle", "legalNotice"]
+          for (const i in formElements) {
+            if (document.getElementById(`${formElements[i]}Input`).value === "") { alert("You haven't filled all the required fields 😮"); return;}
+          } finishSetup();
+      }, () => finishSetup())
+    };
 </script>

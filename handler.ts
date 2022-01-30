@@ -105,6 +105,7 @@ export class handler {
                                                 console.log(yellow(bold("(Setup)")), `The data sent in the ${values2Retrieve[i]} value wasn't valid!`);
                                                 request.response.status = 500;
                                                 request.response.body = {status: "failed"};
+                                                return
                                             }
                                             await config.updateConfig([values2Retrieve[i], (dataParsed[o].value ?? config.getData(values2Retrieve[i]))], false);
                                         }

@@ -16,13 +16,17 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 
-<script defer src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.1/dist/js.cookie.min.js"></script>
-<script defer>
+<script>
     const switchVisibility2Placeholder = (id) => document.getElementById("imagePlaceholderProduct" + id).style.display = 'block';
 
-    const removeFormValuesFromURL = () => { let goodURLBuffer = ""; for (const char in window.location.href) { if (window.location.href[char] != "?") goodURLBuffer += window.location.href[char]; else window.location.href = goodURLBuffer; } };
+    const setScrollingPosition = (save=false) => {
+      if (!save) {
+        if (((Math.floor(Date.now() / 1000)) - (localStorage.getItem("dateWhenLoaded")) >= 7200)) document.body.scrollTop = 0;
+        else document.body.scrollTop = (localStorage.getItem("scrollingPosition"));
+        localStorage.setItem("dateWhenLoaded", (Math.floor(Date.now() / 1000)));
+      } else localStorage.setItem("scrollingPosition", (document.body.scrollTop));
+    }
 
-
-    window.onload = () => { removeFormValuesFromURL(); document.body.scrollTop = Cookies.get('scrollingPosition'); };
-    window.onbeforeunload = () => { document.cookie = `scrollingPosition=${document.body.scrollTop}; max-age=7200`; return};
+    window.onload = () => { setScrollingPosition() };
+    window.onbeforeunload = () => { setScrollingPosition(true); return; };
 </script>

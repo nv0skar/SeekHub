@@ -16,33 +16,32 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 
-<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
-<script defer>
-    const errorInformer = (data, message) => alert(`Something went wrong 😮\n${message}: ${data.status ? data.status:"No request status"} - ${data.responseText ? data.responseText:"No response data"}`);
-
-    const removeFormValuesFromURL = () => { let goodURLBuffer = ""; for (const char in window.location.href) { if (window.location.href[char] != "?") goodURLBuffer += window.location.href[char]; else window.location.href = goodURLBuffer; } };
-
-    function auth() {
-        event.preventDefault();
-        const setupData = JSON.stringify($("#login").serializeArray());
-        $.ajax({
-          type: "POST",
-          url: "/manage/secret",
-          data: setupData,
-          success: (data) => {
-            document.getElementById("login").onsubmit = () => { return false };
-            if (data["status"] === undefined || data["status"] === "failed" || data["status"] != "success") {  errorInformer(data, "Unexpected response"); return; }
-            alert("Login sucessfull!")
-          },
-          error: (error) => { 
-            if (error.status === 401) alert("Invalid credentials 😦");
-            else errorInformer(error, "Request error");
-          },
-          dataType: "json",
-          contentType : "application/json"
-        });
+<script>
+    const errorInformer = (message) => alert(`${message}`);
+    
+    const nextStage = (funcButton, funcKey) => {
+      document.getElementById("submitButton").onclick = () => { funcButton() }
+      document.onkeypress = (key) => { if (key.code === "Enter") funcKey(); }
     }
 
-    window.onload = () => { removeFormValuesFromURL(); document.getElementById("login").onsubmit = () => { auth(); } };
-    window.onbeforeunload = () => { removeFormValuesFromURL(); };
+    const submitData = (data) => {
+      const request = fetch(new Request('/manage/secret', {method: 'POST', headers: {'content-type': 'application/json'}, body: data}))
+        .then((response) => { return response.clone().json() })
+        .catch(() => { return });
+      return request
+    }
+
+    const auth = async () => {
+      const response = await submitData(JSON.stringify([{name: "masterKey", value: (document.getElementById("masterKeyInput").value)}]));
+      if (response === undefined) { errorInformer("Opps! Something went wrong 😮"); return; };
+      if (response["status"] === undefined) { errorInformer("Opps! Unexpected response 😮"); return; }
+      if (response["status"] === "invalid") { errorInformer("Opps! Invalid credentials 😮"); return; }
+      if (response["status"] === "failed") { errorInformer("Opps! Unexpected response 😮"); return; }
+      window.onbeforeunload = () => { event.preventDefault(); };
+      nextStage(() => {}, () => {});
+      alert("Login was successful!")
+      // localStorage.setItem("tempKey", response["token"]);
+    }
+
+    window.onload = () => { nextStage(auth, auth) };
 </script>
