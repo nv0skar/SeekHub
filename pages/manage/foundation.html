@@ -17,7 +17,7 @@
 -->
 
 <style>
-    #loginContainer {
+    #manageContainer {
       position: relative;
       width: 25%;
       height: min-content;
@@ -39,6 +39,17 @@
     #subtitle {
       font-size: large;
       font-weight: bold;
+    }
+
+    #login, #config {
+      display: none;
+    }
+
+    #opps {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
     }
 
     .form-text {
@@ -72,7 +83,7 @@
     }
 
     @media screen and (max-width: 1024px) {
-      #loginContainer {
+      #manageContainer {
         width: 75%;
       }
     }
@@ -92,7 +103,7 @@
       .btn {
         color: rgb(4, 57, 77) !important;
       }
-      #loginContainer {
+      #manageContainer {
         background-color: rgba(17, 25, 40, 0.75);
         border: 1px solid rgba(255, 255, 255, 0.125);
       }
@@ -118,7 +129,7 @@
       .btn {
         color: rgb(99, 111, 149) !important;
       }
-      #loginContainer {
+      #manageContainer {
         background-color: rgba(216, 228, 238, 0.75);
         border: 1px solid rgba(0, 0, 0, 0.125);
       }

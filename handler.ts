@@ -89,6 +89,34 @@ export class handler {
                     }
                 }
 
+                static async slashManageSessionRoute(request: requestContext) {
+                    if (config.getData("setup")) {
+                        handler.utils.requestInformer(request.request.ip, request.request.headers.get("user-agent"), request.request.url.pathname, request.request.method);
+                        request.response.type = "application/json"
+                        if (request.request.body().type == "json") {
+                            try {
+                                const value2Retrieve = "token";
+                                const dataParsed: {name:string, value:string}[] = await request.request.body().value;
+                                for (const o in dataParsed) {
+                                    if (dataParsed[o].name === value2Retrieve) {
+                                        if (dataParsed[o].value === "") {
+                                            console.log(yellow(bold("(Manage)")), `The data sent in the ${value2Retrieve} value wasn't valid!`);
+                                            request.response.status = 500;
+                                            request.response.body = {status: "failed"};
+                                        }
+                                        const isTokenValid: boolean = secrets.tempKey.match((dataParsed[o].value as string));
+                                        request.response.body = {status: "success", valid: isTokenValid};
+                                        return
+                                    }
+                                }
+                            // deno-lint-ignore no-empty
+                            } catch {}
+                        }
+                        request.response.status = 500;
+                        request.response.body = {status: "failed"};
+                    }
+                }
+
                 static async slashSetupRoute(request: requestContext) {
                     if (!config.getData("setup")) {
                         handler.utils.requestInformer(request.request.ip, request.request.headers.get("user-agent"), request.request.url.pathname, request.request.method);
@@ -165,8 +193,9 @@ export class handler {
 
     private route2Route() {
         this.routes.get("/", this.endpoints.internal.getMethod.slashRoute)
-        // .get("/manage", this.endpoints.internal.getMethod.slashManageRoute)
-        // .post("/manage/secret", this.endpoints.internal.postMethod.slashManageSecretRoute)
+        .get("/manage", this.endpoints.internal.getMethod.slashManageRoute)
+        .post("/manage/secret", this.endpoints.internal.postMethod.slashManageSecretRoute)
+        .post("/manage/session", this.endpoints.internal.postMethod.slashManageSessionRoute)
         .post("/setup", this.endpoints.internal.postMethod.slashSetupRoute);
         if (config.getData("publicAPI")) {
             {

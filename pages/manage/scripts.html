@@ -18,30 +18,62 @@
 
 <script>
     const errorInformer = (message) => alert(`${message}`);
-    
-    const nextStage = (funcButton, funcKey) => {
-      document.getElementById("submitButton").onclick = () => { funcButton() }
-      document.onkeypress = (key) => { if (key.code === "Enter") funcKey(); }
+
+    const setTitle = (data) => document.getElementById("title").innerText = data;
+
+    const setSubtitle = (data) => document.getElementById("subtitle").innerText = data;
+
+    const setButtonAction = (context, funcButton, funcKey) => {
+      const contextWithButtons = ["login"];
+      for (const i in contextWithButtons) {
+        if (contextWithButtons[i] === context) { document.getElementById(`${context}Button`).onclick = () => { funcButton() }; }
+        else document.getElementById(`${contextWithButtons[i]}Button`).onclick = {};
+      } document.onkeypress = (key) => { if (key.code === "Enter") funcKey(); }
     }
 
-    const submitData = (data) => {
-      const request = fetch(new Request('/manage/secret', {method: 'POST', headers: {'content-type': 'application/json'}, body: data}))
+    const setContext = (context) => {
+      const contexts = [["login", () => {
+        setTitle("Hi!"); setSubtitle("In order to continue you'll have to authenticate!"); setButtonAction("login", auth, auth);
+      }], ["config", () => {
+        setTitle("Welcome!"); setSubtitle("Under construction 🏗"); setButtonAction("", () => {}, () => {});
+      }]];
+      for (const i in contexts) {
+        if (contexts[i][0] === context) { contexts[i][1](); document.getElementById(context).style.display = "block"; }
+        else document.getElementById(contexts[i][0]).style.display = "none";
+      }
+    }
+
+    const request2Server = async (method, route, data) => {
+      const request = fetch(new Request(route, {method: 'POST', headers: {'content-type': 'application/json'}, body: data}))
         .then((response) => { return response.clone().json() })
         .catch(() => { return });
       return request
     }
 
     const auth = async () => {
-      const response = await submitData(JSON.stringify([{name: "masterKey", value: (document.getElementById("masterKeyInput").value)}]));
+      const response = await request2Server("POST", "/manage/secret", (JSON.stringify([{name: "masterKey", value: (document.getElementById("masterKeyInput").value)}])))
       if (response === undefined) { errorInformer("Opps! Something went wrong 😮"); return; };
-      if (response["status"] === undefined) { errorInformer("Opps! Unexpected response 😮"); return; }
+      if (response["status"] === undefined || response["status"] === "failed") { errorInformer("Opps! Unexpected response 😮"); return; }
       if (response["status"] === "invalid") { errorInformer("Opps! Invalid credentials 😮"); return; }
-      if (response["status"] === "failed") { errorInformer("Opps! Unexpected response 😮"); return; }
-      window.onbeforeunload = () => { event.preventDefault(); };
-      nextStage(() => {}, () => {});
-      alert("Login was successful!")
-      // localStorage.setItem("tempKey", response["token"]);
+      setButtonAction("login", () => {}, () => {});
+      localStorage.setItem("sessionToken", response["token"]);
+      authenticated = true; setContext("config");
     }
 
-    window.onload = () => { nextStage(auth, auth) };
+    const checkSessionToken = async () => {
+      const sessionToken = localStorage.getItem("sessionToken");
+      if (sessionToken === null) return;
+      const sessionValidation = await request2Server("POST", "/manage/session", (JSON.stringify([{name: "token", value: sessionToken}])))
+      if (sessionValidation === undefined || sessionValidation["status"] === undefined || sessionValidation["status"] === "failed") { errorInformer("Opps! Something went wrong when trying to check the session code 😮"); return; };
+      if (sessionValidation["valid"] === true) { authenticated = true; return; }
+      else { localStorage.removeItem("sessionToken"); }
+    }
+
+    window.onload = async () => {
+      await checkSessionToken();
+      if (!authenticated) setContext("login");
+      else { setContext("config"); }
+    };
+
+    let authenticated = false;
 </script>

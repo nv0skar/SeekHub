@@ -23,21 +23,32 @@
     <title>SeekHub</title>
     <link rel="canonical" href="">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/halfmoon@1.1.1/css/halfmoon-variables.min.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com"> 
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin> 
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1">
   </head>
   <body style="background-color: rgba(0, 0, 0, 0); scroll-margin-top: 60px;" id="mainContent">
-    <div id="loginContainer">
-      <h1 id="title">Hi!</h1>
+    <noscript>
+      <style>
+        #manageContainer { display: none; }
+        #opps { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+        @media (prefers-color-scheme: dark) {
+          #opps { color: white; }
+        }
+        @media (prefers-color-scheme: light) {
+          #opps { color: black; }
+        }
+        </style>
+      <h1 id="opps">Opps! without JS this page doesn't work! 😮</h1>
+    </noscript>
+    <div id="manageContainer">
+      <h1 id="title"></h1>
       <hr>
-      <h2 id="subtitle">In order to continue you'll have to authenticate!</h2>
+      <h2 id="subtitle"></h2>
+      <div id="config"></div>
       <div id="login">
         <div class="form-group" id="masterKeyContainer">
           <input type="password" class="form-control" name="masterKey" placeholder="Master Key" required="required" id="masterKeyInput">
         </div>
-        <input class="btn btn-primary btn-block" type="submit" value="Login" id="submitButton">
+        <input class="btn btn-primary btn-block" type="submit" value="Login" id="loginButton">
       </div>
     </div>
   </body>

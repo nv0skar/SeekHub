@@ -51,11 +51,11 @@ export class secrets {
             } return false;
         }
 
-        static async generate(masterKey:string, save=true) {
+        static async generate(masterKey:string, save=true, force2Generate=false) {
             if (((config.getData("masterKey") as string | null) != null) && (masterKey != "")) {
                 const keyMatches = await bcrypt.compare((masterKey as string), ((new TextDecoder().decode(decode(config.getData("masterKey") as string))) as string));
                 if (keyMatches) {
-                    if (((config.getData("tempKey", true)) != null) && ((config.getData("sessionTime", true)) != null)) {
+                    if (((config.getData("tempKey", true)) != "") && ((config.getData("tempKey", true)) != null) && ((config.getData("sessionTime", true)) != null) && (!force2Generate)) {
                         if ((Math.floor(Date.now() / 1000)-((config.getData("sessionTime") as number))<(maxSessionTime as number))) return ((new TextDecoder().decode(decode(config.getData("tempKey") as string))) as string)
                     }
                     const tempKeyGen: string = (generateID(idKeyGenAlphabet, 36))();
