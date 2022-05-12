@@ -25,7 +25,7 @@ const idKeyGenAlphabet = ((idGenAlphabet + "-_+=@!") as string);
 
 export class secrets {
     static identifier = class {
-        static async generate(save=true) {
+        static async generate(save = true) {
             const identifier: string = (generateID(idGenAlphabet, 32))();
             if (save) await config.updateConfig(["id", identifier]);
             return identifier
@@ -33,30 +33,30 @@ export class secrets {
     }
 
     static masterKey = class {
-        static async generate(save=true) {
+        static async generate(save = true) {
             const masterKeyGen: string = (generateID(idKeyGenAlphabet, 36))();
             if (save) await config.updateConfig(["masterKey", (encode((bcrypt.hashSync(masterKeyGen)) as string))]);
             return masterKeyGen
         }
     }
-    
+
     static tempKey = class {
-        static match(tempKey:string) {
+        static match(tempKey: string) {
             if (((config.getData("tempKey", true) as string | null) != null) && (tempKey != "")) {
                 if ((tempKey as string) === ((new TextDecoder().decode(decode(config.getData("tempKey") as string))) as string)) {
-                    if ((Math.floor(Date.now() / 1000)-((config.getData("sessionTime") as  number))<(maxSessionTime as number))) {
+                    if ((Math.floor(Date.now() / 1000) - ((config.getData("sessionTime") as number)) < (maxSessionTime as number))) {
                         return true
                     } else secrets.tempKey.endSession();
                 }
             } return false;
         }
 
-        static async generate(masterKey:string, save=true, force2Generate=false) {
+        static async generate(masterKey: string, save = true, force2Generate = false) {
             if (((config.getData("masterKey") as string | null) != null) && (masterKey != "")) {
                 const keyMatches = await bcrypt.compare((masterKey as string), ((new TextDecoder().decode(decode(config.getData("masterKey") as string))) as string));
                 if (keyMatches) {
                     if (((config.getData("tempKey", true)) != "") && ((config.getData("tempKey", true)) != null) && ((config.getData("sessionTime", true)) != null) && (!force2Generate)) {
-                        if ((Math.floor(Date.now() / 1000)-((config.getData("sessionTime") as number))<(maxSessionTime as number))) return ((new TextDecoder().decode(decode(config.getData("tempKey") as string))) as string)
+                        if ((Math.floor(Date.now() / 1000) - ((config.getData("sessionTime") as number)) < (maxSessionTime as number))) return ((new TextDecoder().decode(decode(config.getData("tempKey") as string))) as string)
                     }
                     const tempKeyGen: string = (generateID(idKeyGenAlphabet, 36))();
                     if (save) {
@@ -67,6 +67,6 @@ export class secrets {
             } return;
         }
 
-        static endSession= async () => { await config.updateConfig(["tempKey", null]); await config.updateConfig(["sessionTime", null]); }
+        static endSession = async () => { await config.updateConfig(["tempKey", null]); await config.updateConfig(["sessionTime", null]); }
     }
 }

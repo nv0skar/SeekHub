@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import { bold, red, cyan, yellow } from "https://deno.land/std@0.118.0/fmt/colors.ts";
+import { bold, red, cyan, yellow } from "https://deno.land/std/fmt/colors.ts";
 import { parse } from "https://deno.land/x/tinyargs/mod.ts"
 import { config } from "./config.ts"
 import { composer } from "./composer.ts";
@@ -23,7 +23,7 @@ const mainRenderer = new composer.main;
 
 export class renderer {
     static showRenderTime = false;
-    static renderInformer = (pageRendered:string, initialTime:number) => console.log(yellow(bold("(Renderer)")), `Rendered '${pageRendered}'. Elapsed time: ${((Date.now())-initialTime)}ms`);
+    static renderInformer = (pageRendered: string, initialTime: number) => console.log(yellow(bold("(Renderer)")), `Rendered '${pageRendered}'. Elapsed time: ${((Date.now()) - initialTime)}ms`);
 
     static main = class {
         static clearMasterPool = () => mainRenderer.clearMasterPool();
@@ -52,13 +52,13 @@ export class renderer {
 }
 
 export class cli {
-    static showHelp = () => { console.log(bold("Usage:"), `\n${cyan(" --help (-h)")}: Show this message (If this is passed, any other argument passed won't take effect!)`, `\n${cyan(" --hostname")}: Set the hostname (Will be saved)`, `\n${cyan(" --port")}: Set the port to listen (Will be saved)`, `\n${cyan(" --publicAPI")}: ${((config.getData("publicAPI") as boolean) ? "Disable":"Activate")} public API (Will be saved)`, `\n${cyan(" --renderTime")}: Show the amount of time elapsed rendering`, `\n${cyan(" --debug")}: Activate debug messages :o`); Deno.exit(0); }
+    static showHelp = () => { console.log(bold("Usage:"), `\n${cyan(" --help (-h)")}: Show this message (If this is passed, any other argument passed won't take effect!)`, `\n${cyan(" --hostname")}: Set the hostname (Will be saved)`, `\n${cyan(" --port")}: Set the port to listen (Will be saved)`, `\n${cyan(" --publicAPI")}: ${((config.getData("publicAPI") as boolean) ? "Disable" : "Activate")} public API (Will be saved)`, `\n${cyan(" --renderTime")}: Show the amount of time elapsed rendering`, `\n${cyan(" --debug")}: Activate debug messages :o`); Deno.exit(0); }
 
-    static updateHostname = async (hostname:string) => { await config.updateConfig(["hostname", (hostname as string)]); }
-    static updatePort = async (port:number) => { await config.updateConfig(["port", (port as number)]); }
-    static togglePublicAPIAccess = async () => { await config.updateConfig(["publicAPI", ((config.getData("publicAPI") as boolean) ? false:true)]); }
+    static updateHostname = async (hostname: string) => { await config.updateConfig(["hostname", (hostname as string)]); }
+    static updatePort = async (port: number) => { await config.updateConfig(["port", (port as number)]); }
+    static togglePublicAPIAccess = async () => { await config.updateConfig(["publicAPI", ((config.getData("publicAPI") as boolean) ? false : true)]); }
 
-    static args2Parse: {name:string, flags:string[], type: BooleanConstructor | StringConstructor | NumberConstructor, stop:boolean}[] = [{name: "help", flags: ["h"], type: Boolean, stop: true}, {name: "hostname", flags: [], type: String, stop: false}, {name: "port", flags: [], type: Number, stop: false}, {name: "publicAPI", flags: [], type: Boolean, stop: false}, {name: "renderTime", flags: [], type: Boolean, stop: false}, {name: "debug", flags: [], type: Boolean, stop: false}];
+    static args2Parse: { name: string, flags: string[], type: BooleanConstructor | StringConstructor | NumberConstructor, stop: boolean }[] = [{ name: "help", flags: ["h"], type: Boolean, stop: true }, { name: "hostname", flags: [], type: String, stop: false }, { name: "port", flags: [], type: Number, stop: false }, { name: "publicAPI", flags: [], type: Boolean, stop: false }, { name: "renderTime", flags: [], type: Boolean, stop: false }, { name: "debug", flags: [], type: Boolean, stop: false }];
 
     static async parse() {
         const parsedArgs = parse(Deno.args, cli.args2Parse)
@@ -80,7 +80,7 @@ export class cli {
 export class debug {
     static status = false;
 
-    static tell = (text:string) => { if (debug.status) console.log(yellow(bold("(Debug)")), text) }
+    static tell = (text: string) => { if (debug.status) console.log(yellow(bold("(Debug)")), text) }
 }
 
 export class special {

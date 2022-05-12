@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import { bold, red, yellow } from "https://deno.land/std@0.118.0/fmt/colors.ts";
+import { bold, red, yellow } from "https://deno.land/std/fmt/colors.ts";
 import { Application, Router, RouterContext } from "https://deno.land/x/oak/mod.ts";
 import { config, apiEndpoint } from "./config.ts"
 import { secrets } from "./secrets.ts"
@@ -29,7 +29,7 @@ export class handler {
     private config: [string, number];
 
     static utils = class {
-        static requestInformer = (origin:string, userAgent: string | null, route: string | null, method:string) => console.log(yellow(bold("(Server)")), `Request from '${origin ?? "Unknown"}' with user-agent '${(userAgent ?? "Unknown")}' to '${(route ?? "Unknown")}' with method '${method}'`);
+        static requestInformer = (origin: string, userAgent: string | null, route: string | null, method: string) => console.log(yellow(bold("(Server)")), `Request from '${origin ?? "Unknown"}' with user-agent '${(userAgent ?? "Unknown")}' to '${(route ?? "Unknown")}' with method '${method}'`);
     }
 
     private endpoints = class {
@@ -57,36 +57,41 @@ export class handler {
                     }
                 }
             }
-    
+
             static postMethod = class {
                 static async slashManageRoute(request: requestContext) {
-                    if (config.getData("setup") && secrets.tempKey.match(request.request.headers.get("Authorization") ?? "")) {
-                        handler.utils.requestInformer(request.request.ip, request.request.headers.get("user-agent"), request.request.url.pathname, request.request.method);
-                        request.response.type = "application/json"
-                        if (request.request.body().type == "json") {
-                            try {
-                                const values2Retrieve = ["title", "name", "navTitle", "legalNotice"];
-                                const dataParsed: {name:string, value:string}[] = await request.request.body().value;
-                                for (const i in values2Retrieve) {
-                                    for (const o in dataParsed) {
-                                        if (dataParsed[o].name === values2Retrieve[i]) {
-                                            if (dataParsed[o].value === "") {
-                                                console.log(yellow(bold("(Setup)")), `The data sent in the ${values2Retrieve[i]} value wasn't valid!`);
-                                                request.response.status = 500;
-                                                request.response.body = {status: "failed"};
-                                                return
+                    if (config.getData("setup")) {
+                        if (secrets.tempKey.match(request.request.headers.get("Authorization") ?? "")) {
+                            handler.utils.requestInformer(request.request.ip, request.request.headers.get("user-agent"), request.request.url.pathname, request.request.method);
+                            request.response.type = "application/json"
+                            if (request.request.body().type == "json") {
+                                try {
+                                    const values2Retrieve = ["title", "name", "navTitle", "legalNotice"];
+                                    const dataParsed: { name: string, value: string }[] = await request.request.body().value;
+                                    for (const i in values2Retrieve) {
+                                        for (const o in dataParsed) {
+                                            if (dataParsed[o].name === values2Retrieve[i]) {
+                                                if (dataParsed[o].value === "") {
+                                                    console.log(yellow(bold("(Setup)")), `The data sent in the ${values2Retrieve[i]} value wasn't valid!`);
+                                                    request.response.status = 500;
+                                                    request.response.body = { status: "failed" };
+                                                    return
+                                                }
+                                                await config.updateConfig([values2Retrieve[i], (dataParsed[o].value ?? config.getData(values2Retrieve[i]))], false);
                                             }
-                                            await config.updateConfig([values2Retrieve[i], (dataParsed[o].value ?? config.getData(values2Retrieve[i]))], false);
                                         }
                                     }
-                                }
-                                request.response.body = {status: "success"};
-                                return
-                            // deno-lint-ignore no-empty
-                            } catch {}
+                                    request.response.body = { status: "success" };
+                                    return
+                                    // deno-lint-ignore no-empty
+                                } catch { }
+                            }
+                            request.response.status = 500;
+                            request.response.body = { status: "failed" };
+                        } else {
+                            request.response.status = 500;
+                            request.response.body = { status: "badAuth" };
                         }
-                        request.response.status = 500;
-                        request.response.body = {status: "failed"};
                     }
                 }
 
@@ -97,26 +102,26 @@ export class handler {
                         if (request.request.body().type == "json") {
                             try {
                                 const value2Retrieve = "masterKey";
-                                const dataParsed: {name:string, value:string}[] = await request.request.body().value;
+                                const dataParsed: { name: string, value: string }[] = await request.request.body().value;
                                 for (const o in dataParsed) {
                                     if (dataParsed[o].name === value2Retrieve) {
                                         if (dataParsed[o].value === "") {
                                             console.log(yellow(bold("(Manage)")), `The data sent in the ${value2Retrieve} value wasn't valid!`);
                                             request.response.status = 500;
-                                            request.response.body = {status: "failed"};
+                                            request.response.body = { status: "failed" };
                                         }
                                         const tempKey: string | undefined = await secrets.tempKey.generate((dataParsed[o].value as string))
-                                        if (tempKey != undefined) request.response.body = {status: "success", token: tempKey};
-                                        else { request.response.status = 401; request.response.body = {status: "invalid"}; return; }
+                                        if (tempKey != undefined) request.response.body = { status: "success", token: tempKey };
+                                        else { request.response.status = 401; request.response.body = { status: "invalid" }; return; }
                                         console.log(yellow(bold("(Manage)")), "Session created successfully!");
                                         return
                                     }
                                 }
-                            // deno-lint-ignore no-empty
-                            } catch {}
+                                // deno-lint-ignore no-empty
+                            } catch { }
                         }
                         request.response.status = 500;
-                        request.response.body = {status: "failed"};
+                        request.response.body = { status: "failed" };
                     }
                 }
 
@@ -127,24 +132,24 @@ export class handler {
                         if (request.request.body().type == "json") {
                             try {
                                 const value2Retrieve = "token";
-                                const dataParsed: {name:string, value:string}[] = await request.request.body().value;
+                                const dataParsed: { name: string, value: string }[] = await request.request.body().value;
                                 for (const o in dataParsed) {
                                     if (dataParsed[o].name === value2Retrieve) {
                                         if (dataParsed[o].value === "") {
                                             console.log(yellow(bold("(Manage)")), `The data sent in the ${value2Retrieve} value wasn't valid!`);
                                             request.response.status = 500;
-                                            request.response.body = {status: "failed"};
+                                            request.response.body = { status: "failed" };
                                         }
                                         const isTokenValid: boolean = secrets.tempKey.match((dataParsed[o].value as string));
-                                        request.response.body = {status: "success", valid: isTokenValid};
+                                        request.response.body = { status: "success", valid: isTokenValid };
                                         return
                                     }
                                 }
-                            // deno-lint-ignore no-empty
-                            } catch {}
+                                // deno-lint-ignore no-empty
+                            } catch { }
                         }
                         request.response.status = 500;
-                        request.response.body = {status: "failed"};
+                        request.response.body = { status: "failed" };
                     }
                 }
 
@@ -156,14 +161,14 @@ export class handler {
                         if (request.request.body().type == "json") {
                             try {
                                 const values2Retrieve = ["title", "name", "navTitle", "legalNotice"];
-                                const dataParsed: {name:string, value:string}[] = await request.request.body().value;
+                                const dataParsed: { name: string, value: string }[] = await request.request.body().value;
                                 for (const i in values2Retrieve) {
                                     for (const o in dataParsed) {
                                         if (dataParsed[o].name === values2Retrieve[i]) {
                                             if (dataParsed[o].value === "") {
                                                 console.log(yellow(bold("(Setup)")), `The data sent in the ${values2Retrieve[i]} value wasn't valid!`);
                                                 request.response.status = 500;
-                                                request.response.body = {status: "failed"};
+                                                request.response.body = { status: "failed" };
                                                 return
                                             }
                                             await config.updateConfig([values2Retrieve[i], (dataParsed[o].value ?? config.getData(values2Retrieve[i]))], false);
@@ -173,15 +178,15 @@ export class handler {
                                 const identifier = await secrets.identifier.generate()
                                 const masterKey = await secrets.masterKey.generate();
                                 await config.updateConfig(["setup", true]);
-                                request.response.body = {status: "success", id: identifier, masterKey: masterKey};
+                                request.response.body = { status: "success", id: identifier, masterKey: masterKey };
                                 console.log(yellow(bold("(Setup)")), "Setup finished successfully!");
                                 return
-                            // deno-lint-ignore no-empty
-                            } catch {}
+                                // deno-lint-ignore no-empty
+                            } catch { }
                         }
                         console.log(yellow(bold("(Setup)")), "The data sent in the setup wasn't valid!");
                         request.response.status = 500;
-                        request.response.body = {status: "failed"};
+                        request.response.body = { status: "failed" };
                     }
                 }
             }
@@ -194,46 +199,46 @@ export class handler {
                         if (!config.getData("setup")) return
                         handler.utils.requestInformer(request.request.ip, request.request.headers.get("user-agent"), request.request.url.pathname, request.request.method);
                         request.response.type = "application/json"
-                        request.response.body = {id: (config.getData("id") as string), name: (config.getData("name") as string), info: (config.getData("extraInfo") as string[]), notice: (config.getData("legalNotice") as string)};
+                        request.response.body = { id: (config.getData("id") as string), name: (config.getData("name") as string), info: (config.getData("extraInfo") as string[]), notice: (config.getData("legalNotice") as string) };
                     }
 
                     static slashCategoriesRoute(request: requestContext) {
                         if (!config.getData("setup")) return
                         handler.utils.requestInformer(request.request.ip, request.request.headers.get("user-agent"), request.request.url.pathname, request.request.method);
                         request.response.type = "application/json"
-                        request.response.body = {id: (config.getData("id") as string), categories: (config.getData("categories") as {tag: string, name: string}[])};
+                        request.response.body = { id: (config.getData("id") as string), categories: (config.getData("categories") as { tag: string, name: string }[]) };
                     }
 
                     static slashItemsRoute(request: requestContext) {
                         if (!config.getData("setup")) return
                         handler.utils.requestInformer(request.request.ip, request.request.headers.get("user-agent"), request.request.url.pathname, request.request.method);
                         request.response.type = "application/json"
-                        request.response.body = {id: (config.getData("id") as string), items: (config.getData("items") as {id: number, type: string, image: string, name: string, description: string, price: string, allergens: string}[])};
+                        request.response.body = { id: (config.getData("id") as string), items: (config.getData("items") as { id: number, type: string, image: string, name: string, description: string, price: string, allergens: string }[]) };
                     }
                 }
             }
         }
     }
 
-    constructor(host:string, port:number) {
+    constructor(host: string, port: number) {
         this.routes = new Router();
-        this.route2Route()
+        this.routes2Route()
         this.server = new Application().use(this.routes.routes())
         this.config = [host, port];
     }
 
-    private route2Route() {
+    private routes2Route() {
         this.routes.get("/", this.endpoints.internal.getMethod.slashRoute)
             .post("/setup", this.endpoints.internal.postMethod.slashSetupRoute);
-        { // Private
+        { // private endpoint
             this.routes.get("/manage", this.endpoints.internal.getMethod.slashManageRoute);
-            { // API
-                this.routes.post("/manage/secret", this.endpoints.internal.postMethod.slashManageSecretRoute)
-                    // .post("/manage", this.endpoints.internal.postMethod.slashManageRoute)
+            { // api
+                this.routes.post("/manage", this.endpoints.internal.postMethod.slashManageRoute)
+                    .post("/manage/secret", this.endpoints.internal.postMethod.slashManageSecretRoute)
                     .post("/manage/session", this.endpoints.internal.postMethod.slashManageSessionRoute)
             }
         }
-        if (config.getData("publicAPI")) { // Public API
+        if (config.getData("publicAPI")) { // public endpoint
             { // v1
                 const publicEndpointV1 = apiEndpoint.concat("/v1");
                 this.routes.get(publicEndpointV1, this.endpoints.api.v1.getMethod.slashRoute)
@@ -245,7 +250,7 @@ export class handler {
 
     public async listen() {
         try {
-            await this.server.listen({hostname: (this.config[0] as string), port: (this.config[1] as number)})
+            await this.server.listen({ hostname: (this.config[0] as string), port: (this.config[1] as number) })
         } catch (e) {
             debugHandler.tell(red(`Error caught on server routine (${e})`));
         }
