@@ -59,6 +59,37 @@ export class handler {
             }
     
             static postMethod = class {
+                static async slashManageRoute(request: requestContext) {
+                    if (config.getData("setup") && secrets.tempKey.match(request.request.headers.get("Authorization") ?? "")) {
+                        handler.utils.requestInformer(request.request.ip, request.request.headers.get("user-agent"), request.request.url.pathname, request.request.method);
+                        request.response.type = "application/json"
+                        if (request.request.body().type == "json") {
+                            try {
+                                const values2Retrieve = ["title", "name", "navTitle", "legalNotice"];
+                                const dataParsed: {name:string, value:string}[] = await request.request.body().value;
+                                for (const i in values2Retrieve) {
+                                    for (const o in dataParsed) {
+                                        if (dataParsed[o].name === values2Retrieve[i]) {
+                                            if (dataParsed[o].value === "") {
+                                                console.log(yellow(bold("(Setup)")), `The data sent in the ${values2Retrieve[i]} value wasn't valid!`);
+                                                request.response.status = 500;
+                                                request.response.body = {status: "failed"};
+                                                return
+                                            }
+                                            await config.updateConfig([values2Retrieve[i], (dataParsed[o].value ?? config.getData(values2Retrieve[i]))], false);
+                                        }
+                                    }
+                                }
+                                request.response.body = {status: "success"};
+                                return
+                            // deno-lint-ignore no-empty
+                            } catch {}
+                        }
+                        request.response.status = 500;
+                        request.response.body = {status: "failed"};
+                    }
+                }
+
                 static async slashManageSecretRoute(request: requestContext) {
                     if (config.getData("setup")) {
                         handler.utils.requestInformer(request.request.ip, request.request.headers.get("user-agent"), request.request.url.pathname, request.request.method);
@@ -194,6 +225,7 @@ export class handler {
     private route2Route() {
         this.routes.get("/", this.endpoints.internal.getMethod.slashRoute)
         .get("/manage", this.endpoints.internal.getMethod.slashManageRoute)
+        // .post("/manage", this.endpoints.internal.postMethod.slashManageRoute)
         .post("/manage/secret", this.endpoints.internal.postMethod.slashManageSecretRoute)
         .post("/manage/session", this.endpoints.internal.postMethod.slashManageSessionRoute)
         .post("/setup", this.endpoints.internal.postMethod.slashSetupRoute);
