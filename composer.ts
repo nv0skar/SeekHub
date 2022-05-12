@@ -14,12 +14,12 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import { render } from 'https://deno.land/x/mustache_ts/mustache.ts';
-import { DOMParser, Document } from "https://deno.land/x/deno_dom/deno-dom-wasm.ts";
-import { config, categoryStructure, itemStructure } from "./config.ts" 
+import { render } from "https://deno.land/x/mustache_ts@v0.4.1.1/mustache.ts";
+import { DOMParser, Document } from "https://deno.land/x/deno_dom@v0.1.20-alpha/deno-dom-wasm.ts";
+import { config, categoryStructure, itemStructure } from "./config.ts"
 
 export class composer {
-    static setup = async function() {
+    static setup = async function () {
         const setup = await Deno.readTextFile("./pages/setup/main.html");
         const foundation = await Deno.readTextFile("./pages/setup/foundation.html");
         const scripts = await Deno.readTextFile("./pages/setup/scripts.html");
@@ -30,10 +30,10 @@ export class composer {
         composition.documentElement!.getElementById("foundation")!.innerHTML += new DOMParser().parseFromString(foundation.toString(), "text/html")!.documentElement!.outerHTML.toString();
         composition.documentElement!.getElementById("foundation")!.innerHTML += new DOMParser().parseFromString(scripts.toString(), "text/html")!.documentElement!.outerHTML.toString();
 
-        return composition.documentElement!.outerHTML;        
+        return composition.documentElement!.outerHTML;
     }
 
-    static manage = async function() {
+    static manage = async function () {
         const manage = await Deno.readTextFile("./pages/manage/main.html");
         const foundation = await Deno.readTextFile("./pages/manage/foundation.html");
         const scripts = await Deno.readTextFile("./pages/manage/scripts.html");
@@ -44,14 +44,14 @@ export class composer {
         composition.documentElement!.getElementById("foundation")!.innerHTML += new DOMParser().parseFromString(foundation.toString(), "text/html")!.documentElement!.outerHTML.toString();
         composition.documentElement!.getElementById("foundation")!.innerHTML += new DOMParser().parseFromString(scripts.toString(), "text/html")!.documentElement!.outerHTML.toString();
 
-        return composition.documentElement!.outerHTML;        
+        return composition.documentElement!.outerHTML;
     }
 
     static main = class {
-        private masterPool:string|undefined = undefined;
-        private mainView:Promise<string> = Deno.readTextFile("./pages/main.html");
-        private foundation:Promise<string> = Deno.readTextFile("./pages/foundation.html");
-        private scripts:Promise<string> = Deno.readTextFile("./pages/scripts.html");
+        private masterPool: string | undefined = undefined;
+        private mainView: Promise<string> = Deno.readTextFile("./pages/main.html");
+        private foundation: Promise<string> = Deno.readTextFile("./pages/foundation.html");
+        private scripts: Promise<string> = Deno.readTextFile("./pages/scripts.html");
         private navbarItem = `<a class="navbar-item resize" href="#{{id}}"><span style="vertical-align: super;">{{name}}</span></a>`;
         private superContainer = `<div class="columns" id="columnGroup{{num}}"></div>`;
         private sectionContainer = `<div class="column"><section style="scroll-margin-top: 102px;" id="{{id}}"><h2 class="subtitle" style="font-family: Arial, Helvetica, sans-serif; font-display: swap; font-size: 28px; font-weight: 900;">{{name}}</h2><hr><div id="{{id}}Container"></div></section></div><br>`;
@@ -60,40 +60,47 @@ export class composer {
 
         private renderDynamicComponents(composition: Document) {
             // For each pair of categories add a section
-            const numberOfSectionGroups = Math.round((config.getData("categories") as categoryStructure[]).length/2);
+            const numberOfSectionGroups = Math.round((config.getData("categories") as categoryStructure[]).length / 2);
             for (let i = 0; numberOfSectionGroups > i; i++) {
-                const sectionGroupsElement = new DOMParser().parseFromString(render((this.superContainer), {num: i}).toString(), "text/html")!.documentElement!.outerHTML.toString();
+                const sectionGroupsElement = new DOMParser().parseFromString(render((this.superContainer), { num: i }).toString(), "text/html")!.documentElement!.outerHTML.toString();
                 composition.documentElement!.getElementById("mainSection")!.innerHTML += sectionGroupsElement;
             }
-          
+
             // For each category add a new section to the page
             let actualGroup = 0
             let repetitionsOfGroup = 0
             for (const i in (config.getData("categories") as categoryStructure[])) {
                 const elementData = (config.getData("categories") as categoryStructure[])[i];
-                const navbarElement = new DOMParser().parseFromString(render((this.navbarItem), {id: elementData.tag, name: elementData.name}).toString(), "text/html")!.documentElement!.outerHTML.toString();
-                const sectionElement = new DOMParser().parseFromString(render((this.sectionContainer), {id: elementData.tag, name: elementData.name}).toString(), "text/html")!.documentElement!.outerHTML.toString();
+                const navbarElement = new DOMParser().parseFromString(render((this.navbarItem), { id: elementData.tag, name: elementData.name }).toString(), "text/html")!.documentElement!.outerHTML.toString();
+                const sectionElement = new DOMParser().parseFromString(render((this.sectionContainer), { id: elementData.tag, name: elementData.name }).toString(), "text/html")!.documentElement!.outerHTML.toString();
                 composition.documentElement!.getElementById("navbarSection")!.innerHTML += navbarElement;
                 composition.documentElement!.getElementById("columnGroup" + actualGroup.toString())!.innerHTML += sectionElement;
-                if (repetitionsOfGroup == 1) {repetitionsOfGroup = 0; actualGroup += 1}
+                if (repetitionsOfGroup == 1) { repetitionsOfGroup = 0; actualGroup += 1 }
                 else repetitionsOfGroup += 1
             }
-    
+
             // For each element in menu add a new element to the page
             let lastType2Render = ""
             let numberLastTypeRendered = 0
             for (const i in (config.getData("items") as itemStructure[])) {
-                const elementData =  (config.getData("items") as itemStructure[])[i];
+                const elementData = (config.getData("items") as itemStructure[])[i];
+                let tagInCategories = false
+                for (const i in config.getData("categories") as categoryStructure[]) {
+                    if (elementData.type === (config.getData("categories") as categoryStructure[])[i].tag) {
+                        tagInCategories = true
+                    }
+                }
+                if (!tagInCategories) continue;
                 if (elementData.type != lastType2Render) numberLastTypeRendered = 1;
                 else numberLastTypeRendered += 1;
                 lastType2Render = elementData.type;
-                const element = new DOMParser().parseFromString(render((this.elementItem), {id: elementData.id, image: elementData.image, name: elementData.name, price: elementData.price, description: elementData.description, allergens: elementData.allergens, displaySpan: (elementData.image == "" ? "block":"none"), displayImage: (elementData.image == "" ? "none":"block")}).toString(), "text/html")!.documentElement!.outerHTML.toString();
-                composition.documentElement!.getElementById(elementData.type + "Container")!.innerHTML += new DOMParser().parseFromString(((elementData.type == lastType2Render && numberLastTypeRendered != 1) ? "<hr style='position: relative; margin-top: -12px; bottom: 2px;'>":"").toString(), "text/html")!.documentElement!.outerHTML.toString() + element;
+                const element = new DOMParser().parseFromString(render((this.elementItem), { id: elementData.id, image: elementData.image, name: elementData.name, price: elementData.price, description: elementData.description, allergens: elementData.allergens, displaySpan: (elementData.image == "" ? "block" : "none"), displayImage: (elementData.image == "" ? "none" : "block") }).toString(), "text/html")!.documentElement!.outerHTML.toString();
+                composition.documentElement!.getElementById(elementData.type + "Container")!.innerHTML += new DOMParser().parseFromString(((elementData.type == lastType2Render && numberLastTypeRendered != 1) ? "<hr style='position: relative; margin-top: -12px; bottom: 2px;'>" : "").toString(), "text/html")!.documentElement!.outerHTML.toString() + element;
             }
-    
+
             // For each piece of information add it to a box in the footer
             for (const i in (config.getData("extraInfo") as string[])) {
-                const footerInfo = new DOMParser().parseFromString(render((this.footerInfoElement), {text: (config.getData("extraInfo") as string[])[i]}), "text/html")!.documentElement!.outerHTML.toString();
+                const footerInfo = new DOMParser().parseFromString(render((this.footerInfoElement), { text: (config.getData("extraInfo") as string[])[i] }), "text/html")!.documentElement!.outerHTML.toString();
                 composition.documentElement!.getElementById("extraInfoContainer")!.innerHTML += footerInfo;
             }
         }
@@ -104,16 +111,16 @@ export class composer {
 
         async compose() {
             if (this.masterPool != undefined) return (this.masterPool);
-            const main = render((await this.mainView), {title: (config.getData("title") as string), navTitle1st: (config.getData("navTitle") as string[])[0], navTitle2nd: (config.getData("navTitle") as string[])[1], extraInfoVisibility: ((config.getData("extraInfo") as string[]).length == 0 ? "none":"block"), nameFooter: (config.getData("name") as string), legalNotice: (config.getData("legalNotice") as string), id: (config.getData("id") as string)});
-    
+            const main = render((await this.mainView), { title: (config.getData("title") as string), navTitle1st: (config.getData("navTitle") as string[])[0], navTitle2nd: (config.getData("navTitle") as string[])[1], extraInfoVisibility: ((config.getData("extraInfo") as string[]).length == 0 ? "none" : "block"), nameFooter: (config.getData("name") as string), legalNotice: (config.getData("legalNotice") as string), id: (config.getData("id") as string) });
+
             // deno-lint-ignore prefer-const
             let composition = new DOMParser().parseFromString(main, "text/html")!;
-    
+
             composition.documentElement!.getElementById("foundation")!.innerHTML += new DOMParser().parseFromString((await this.foundation).toString(), "text/html")!.documentElement!.outerHTML.toString();
             composition.documentElement!.getElementById("foundation")!.innerHTML += new DOMParser().parseFromString((await this.scripts).toString(), "text/html")!.documentElement!.outerHTML.toString();
-    
+
             this.renderDynamicComponents(composition);
-    
+
             const finalComposition = composition.documentElement!.outerHTML;
 
             this.masterPool = (finalComposition);

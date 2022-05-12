@@ -14,9 +14,9 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import { bold, red, yellow } from "https://deno.land/std/fmt/colors.ts";
-import { Application, Router, RouterContext } from "https://deno.land/x/oak/mod.ts";
-import { config, apiEndpoint } from "./config.ts"
+import { bold, red, yellow } from "https://deno.land/std@0.139.0/fmt/colors.ts";
+import { Application, Router, RouterContext } from "https://deno.land/x/oak@v10.1.0/mod.ts";
+import { config, apiEndpoint, categoryStructure } from "./config.ts"
 import { secrets } from "./secrets.ts"
 import { renderer, debug as debugHandler } from "./utils.ts"
 
@@ -33,131 +33,71 @@ export class handler {
     }
 
     private endpoints = class {
-        static internal = class {
-            static getMethod = class {
-                static async slashRoute(request: requestContext) {
-                    handler.utils.requestInformer(request.request.ip, request.request.headers.get("user-agent"), request.request.url.pathname, request.request.method);
-                    request.response.type = "text/html"
-                    if (!config.getData("setup")) {
-                        console.log(yellow(bold("(Setup)")), "Setup page was returned instead of the main page!")
-                        request.response.body = await renderer.setup();
-                    } else {
-                        request.response.body = await renderer.main.render();
-                    }
-                }
+        static async slashRoute(request: requestContext) {
+            handler.utils.requestInformer(request.request.ip, request.request.headers.get("user-agent"), request.request.url.pathname, request.request.method);
+            request.response.type = "text/html"
+            if (!config.getData("setup")) {
+                console.log(yellow(bold("(Setup)")), "Setup page was returned instead of the main page!")
+                request.response.body = await renderer.setup();
+            } else {
+                request.response.body = await renderer.main.render();
+            }
+        }
 
-                static async slashManageRoute(request: requestContext) {
-                    handler.utils.requestInformer(request.request.ip, request.request.headers.get("user-agent"), request.request.url.pathname, request.request.method);
-                    request.response.type = "text/html"
-                    if (!config.getData("setup")) {
-                        console.log(yellow(bold("(Setup)")), "Setup page was returned instead of the manager!")
-                        request.response.body = await renderer.setup();
-                    } else {
-                        request.response.body = await renderer.manage();
-                    }
+        static internal = class {
+            static async slashSetupRoute(request: requestContext) {
+                if (config.getData("setup")) return
+                handler.utils.requestInformer(request.request.ip, request.request.headers.get("user-agent"), request.request.url.pathname, request.request.method);
+                request.response.type = "application/json"
+                console.log(yellow(bold("(Setup)")), "Setup data submitted!");
+                if (request.request.body().type == "json") {
+                    try {
+                        const values2Retrieve = ["title", "name", "navTitle", "legalNotice"];
+                        const dataParsed: { name: string, value: string }[] = await request.request.body().value;
+                        for (const i in values2Retrieve) {
+                            for (const o in dataParsed) {
+                                if (dataParsed[o].name === values2Retrieve[i]) {
+                                    if (dataParsed[o].value === "") {
+                                        console.log(yellow(bold("(Setup)")), `The data sent in the ${values2Retrieve[i]} value wasn't valid!`);
+                                        request.response.status = 500;
+                                        request.response.body = { status: "failed" };
+                                        return
+                                    }
+                                    await config.updateConfig([values2Retrieve[i], (dataParsed[o].value ?? config.getData(values2Retrieve[i]))], false);
+                                }
+                            }
+                        }
+                        const identifier = await secrets.identifier.generate()
+                        const masterKey = await secrets.masterKey.generate();
+                        await config.updateConfig(["setup", true]);
+                        request.response.body = { status: "success", id: identifier, masterKey: masterKey };
+                        console.log(yellow(bold("(Setup)")), "Setup finished successfully!");
+                        return
+                        // deno-lint-ignore no-empty
+                    } catch { }
+                }
+                console.log(yellow(bold("(Setup)")), "The data sent in the setup wasn't valid!");
+                request.response.status = 500;
+                request.response.body = { status: "failed" };
+            }
+
+            static async slashManageRoute(request: requestContext) {
+                handler.utils.requestInformer(request.request.ip, request.request.headers.get("user-agent"), request.request.url.pathname, request.request.method);
+                request.response.type = "text/html"
+                if (!config.getData("setup")) {
+                    console.log(yellow(bold("(Setup)")), "Setup page was returned instead of the manager!")
+                    request.response.body = await renderer.setup();
+                } else {
+                    request.response.body = await renderer.manage();
                 }
             }
 
-            static postMethod = class {
+            static mod = class {
                 static async slashManageRoute(request: requestContext) {
-                    if (config.getData("setup")) {
-                        if (secrets.tempKey.match(request.request.headers.get("Authorization") ?? "")) {
-                            handler.utils.requestInformer(request.request.ip, request.request.headers.get("user-agent"), request.request.url.pathname, request.request.method);
-                            request.response.type = "application/json"
-                            if (request.request.body().type == "json") {
-                                try {
-                                    const values2Retrieve = ["title", "name", "navTitle", "legalNotice"];
-                                    const dataParsed: { name: string, value: string }[] = await request.request.body().value;
-                                    for (const i in values2Retrieve) {
-                                        for (const o in dataParsed) {
-                                            if (dataParsed[o].name === values2Retrieve[i]) {
-                                                if (dataParsed[o].value === "") {
-                                                    console.log(yellow(bold("(Setup)")), `The data sent in the ${values2Retrieve[i]} value wasn't valid!`);
-                                                    request.response.status = 500;
-                                                    request.response.body = { status: "failed" };
-                                                    return
-                                                }
-                                                await config.updateConfig([values2Retrieve[i], (dataParsed[o].value ?? config.getData(values2Retrieve[i]))], false);
-                                            }
-                                        }
-                                    }
-                                    request.response.body = { status: "success" };
-                                    return
-                                    // deno-lint-ignore no-empty
-                                } catch { }
-                            }
-                            request.response.status = 500;
-                            request.response.body = { status: "failed" };
-                        } else {
-                            request.response.status = 500;
-                            request.response.body = { status: "badAuth" };
-                        }
-                    }
-                }
-
-                static async slashManageSecretRoute(request: requestContext) {
-                    if (config.getData("setup")) {
+                    if (!config.getData("setup")) return
+                    if (secrets.tempKey.match(request.request.headers.get("Authorization") ?? "")) {
                         handler.utils.requestInformer(request.request.ip, request.request.headers.get("user-agent"), request.request.url.pathname, request.request.method);
                         request.response.type = "application/json"
-                        if (request.request.body().type == "json") {
-                            try {
-                                const value2Retrieve = "masterKey";
-                                const dataParsed: { name: string, value: string }[] = await request.request.body().value;
-                                for (const o in dataParsed) {
-                                    if (dataParsed[o].name === value2Retrieve) {
-                                        if (dataParsed[o].value === "") {
-                                            console.log(yellow(bold("(Manage)")), `The data sent in the ${value2Retrieve} value wasn't valid!`);
-                                            request.response.status = 500;
-                                            request.response.body = { status: "failed" };
-                                        }
-                                        const tempKey: string | undefined = await secrets.tempKey.generate((dataParsed[o].value as string))
-                                        if (tempKey != undefined) request.response.body = { status: "success", token: tempKey };
-                                        else { request.response.status = 401; request.response.body = { status: "invalid" }; return; }
-                                        console.log(yellow(bold("(Manage)")), "Session created successfully!");
-                                        return
-                                    }
-                                }
-                                // deno-lint-ignore no-empty
-                            } catch { }
-                        }
-                        request.response.status = 500;
-                        request.response.body = { status: "failed" };
-                    }
-                }
-
-                static async slashManageSessionRoute(request: requestContext) {
-                    if (config.getData("setup")) {
-                        handler.utils.requestInformer(request.request.ip, request.request.headers.get("user-agent"), request.request.url.pathname, request.request.method);
-                        request.response.type = "application/json"
-                        if (request.request.body().type == "json") {
-                            try {
-                                const value2Retrieve = "token";
-                                const dataParsed: { name: string, value: string }[] = await request.request.body().value;
-                                for (const o in dataParsed) {
-                                    if (dataParsed[o].name === value2Retrieve) {
-                                        if (dataParsed[o].value === "") {
-                                            console.log(yellow(bold("(Manage)")), `The data sent in the ${value2Retrieve} value wasn't valid!`);
-                                            request.response.status = 500;
-                                            request.response.body = { status: "failed" };
-                                        }
-                                        const isTokenValid: boolean = secrets.tempKey.match((dataParsed[o].value as string));
-                                        request.response.body = { status: "success", valid: isTokenValid };
-                                        return
-                                    }
-                                }
-                                // deno-lint-ignore no-empty
-                            } catch { }
-                        }
-                        request.response.status = 500;
-                        request.response.body = { status: "failed" };
-                    }
-                }
-
-                static async slashSetupRoute(request: requestContext) {
-                    if (!config.getData("setup")) {
-                        handler.utils.requestInformer(request.request.ip, request.request.headers.get("user-agent"), request.request.url.pathname, request.request.method);
-                        request.response.type = "application/json"
-                        console.log(yellow(bold("(Setup)")), "Setup data submitted!");
                         if (request.request.body().type == "json") {
                             try {
                                 const values2Retrieve = ["title", "name", "navTitle", "legalNotice"];
@@ -175,24 +115,148 @@ export class handler {
                                         }
                                     }
                                 }
-                                const identifier = await secrets.identifier.generate()
-                                const masterKey = await secrets.masterKey.generate();
-                                await config.updateConfig(["setup", true]);
-                                request.response.body = { status: "success", id: identifier, masterKey: masterKey };
-                                console.log(yellow(bold("(Setup)")), "Setup finished successfully!");
+                                request.response.body = { status: "success" };
                                 return
                                 // deno-lint-ignore no-empty
                             } catch { }
                         }
-                        console.log(yellow(bold("(Setup)")), "The data sent in the setup wasn't valid!");
                         request.response.status = 500;
                         request.response.body = { status: "failed" };
+                    } else {
+                        request.response.status = 500;
+                        request.response.body = { status: "badAuth" };
                     }
+
+                }
+
+                static page = class {
+                    static categories = class {
+
+                        static slashManageCategoriesGetRoute(request: requestContext) {
+                            if (!config.getData("setup")) return
+                            if (secrets.tempKey.match(request.request.headers.get("Authorization") ?? "")) {
+                                handler.utils.requestInformer(request.request.ip, request.request.headers.get("user-agent"), request.request.url.pathname, request.request.method);
+                                request.response.type = "application/json"
+                                request.response.body = { categories: (config.getData("categories") as categoryStructure[]) };
+                            }
+                        }
+
+                        static async slashManageCategoriesAddRoute(request: requestContext) {
+                            if (!config.getData("setup")) return
+                            if (secrets.tempKey.match(request.request.headers.get("Authorization") ?? "")) {
+                                handler.utils.requestInformer(request.request.ip, request.request.headers.get("user-agent"), request.request.url.pathname, request.request.method);
+                                request.response.type = "application/json"
+                                if (request.request.body().type == "json") {
+                                    try {
+                                        const value2Retrieve = "categories";
+                                        const dataParsed: { name: string, value: categoryStructure[] }[] = await request.request.body().value;
+                                        for (const i in dataParsed) {
+                                            if (dataParsed[i].name === value2Retrieve) {
+                                                for (const o in dataParsed[i].value) { await config.updateConfig([value2Retrieve, (config.getData("categories") as categoryStructure[]).filter((element) => { return (element.tag !== dataParsed[i].value[o].tag) })], false); continue }
+                                                await config.updateConfig(["categories", (dataParsed[i].value.concat((config.getData("categories") as categoryStructure[]))) ?? config.getData("categories")], false);
+                                                request.response.body = { status: "success" };
+                                                return
+                                            }
+                                        }
+                                        // deno-lint-ignore no-empty
+                                    } catch { }
+                                }
+                                request.response.status = 500;
+                                request.response.body = { status: "failed" };
+                            } else {
+                                request.response.status = 500;
+                                request.response.body = { status: "badAuth" };
+                            }
+                        }
+
+                        static async slashManageCategoriesRemoveRoute(request: requestContext) {
+                            if (!config.getData("setup")) return
+                            if (secrets.tempKey.match(request.request.headers.get("Authorization") ?? "")) {
+                                handler.utils.requestInformer(request.request.ip, request.request.headers.get("user-agent"), request.request.url.pathname, request.request.method);
+                                request.response.type = "application/json"
+                                if (request.request.body().type == "json") {
+                                    try {
+                                        const value2Retrieve = "categories";
+                                        const dataParsed: { name: string, value: { tag: string }[] }[] = await request.request.body().value;
+                                        for (const i in dataParsed) {
+                                            if (dataParsed[i].name === value2Retrieve) {
+                                                for (const o in dataParsed[i].value) { await config.updateConfig(["categories", (config.getData("categories") as categoryStructure[]).filter((element) => { return (element.tag !== dataParsed[i].value[o].tag) })], false) }
+                                                request.response.body = { status: "success" };
+                                                return
+                                            }
+                                        }
+                                        // deno-lint-ignore no-empty
+                                    } catch { }
+                                }
+                                request.response.status = 500;
+                                request.response.body = { status: "failed" };
+                            } else {
+                                request.response.status = 500;
+                                request.response.body = { status: "badAuth" };
+                            }
+                        }
+                    }
+                }
+
+                static async slashManageSecretRoute(request: requestContext) {
+                    if (!config.getData("setup")) return
+                    handler.utils.requestInformer(request.request.ip, request.request.headers.get("user-agent"), request.request.url.pathname, request.request.method);
+                    request.response.type = "application/json"
+                    if (request.request.body().type == "json") {
+                        try {
+                            const value2Retrieve = "masterKey";
+                            const dataParsed: { name: string, value: string }[] = await request.request.body().value;
+                            for (const o in dataParsed) {
+                                if (dataParsed[o].name === value2Retrieve) {
+                                    if (dataParsed[o].value === "") {
+                                        console.log(yellow(bold("(Manage)")), `The data sent in the ${value2Retrieve} value wasn't valid!`);
+                                        request.response.status = 500;
+                                        request.response.body = { status: "failed" };
+                                    }
+                                    const tempKey: string | undefined = await secrets.tempKey.generate((dataParsed[o].value as string))
+                                    if (tempKey != undefined) request.response.body = { status: "success", token: tempKey };
+                                    else { request.response.status = 401; request.response.body = { status: "invalid" }; return; }
+                                    console.log(yellow(bold("(Manage)")), "Session created successfully!");
+                                    return
+                                }
+                            }
+                            // deno-lint-ignore no-empty
+                        } catch { }
+                    }
+                    request.response.status = 500;
+                    request.response.body = { status: "failed" };
+                }
+
+                static async slashManageSessionRoute(request: requestContext) {
+                    if (!config.getData("setup")) return
+                    handler.utils.requestInformer(request.request.ip, request.request.headers.get("user-agent"), request.request.url.pathname, request.request.method);
+                    request.response.type = "application/json"
+                    if (request.request.body().type == "json") {
+                        try {
+                            const value2Retrieve = "token";
+                            const dataParsed: { name: string, value: string }[] = await request.request.body().value;
+                            for (const o in dataParsed) {
+                                if (dataParsed[o].name === value2Retrieve) {
+                                    if (dataParsed[o].value === "") {
+                                        console.log(yellow(bold("(Manage)")), `The data sent in the ${value2Retrieve} value wasn't valid!`);
+                                        request.response.status = 500;
+                                        request.response.body = { status: "failed" };
+                                    }
+                                    const isTokenValid: boolean = secrets.tempKey.match((dataParsed[o].value as string));
+                                    request.response.body = { status: "success", valid: isTokenValid };
+                                    return
+                                }
+                            }
+                            // deno-lint-ignore no-empty
+                        } catch { }
+                    }
+                    request.response.status = 500;
+                    request.response.body = { status: "failed" };
                 }
             }
         }
 
-        static api = class {
+        static public = class {
             static v1 = class {
                 static getMethod = class {
                     static slashRoute(request: requestContext) {
@@ -228,22 +292,30 @@ export class handler {
     }
 
     private routes2Route() {
-        this.routes.get("/", this.endpoints.internal.getMethod.slashRoute)
-            .post("/setup", this.endpoints.internal.postMethod.slashSetupRoute);
-        { // private endpoint
-            this.routes.get("/manage", this.endpoints.internal.getMethod.slashManageRoute);
-            { // api
-                this.routes.post("/manage", this.endpoints.internal.postMethod.slashManageRoute)
-                    .post("/manage/secret", this.endpoints.internal.postMethod.slashManageSecretRoute)
-                    .post("/manage/session", this.endpoints.internal.postMethod.slashManageSessionRoute)
+        this.routes.get("/", this.endpoints.slashRoute)
+            .post("/setup", this.endpoints.internal.slashSetupRoute);
+        {
+            this.routes.get("/manage", this.endpoints.internal.mod.slashManageRoute);
+            {
+                this.routes.post("/manage", this.endpoints.internal.mod.slashManageRoute)
+                    .post("/manage/secret", this.endpoints.internal.mod.slashManageSecretRoute)
+                    .post("/manage/session", this.endpoints.internal.mod.slashManageSessionRoute)
+                {
+                    {
+                        this.routes
+                            .get("/manage/categories", this.endpoints.internal.mod.page.categories.slashManageCategoriesGetRoute)
+                            .post("/manage/categories", this.endpoints.internal.mod.page.categories.slashManageCategoriesAddRoute)
+                            .delete("/manage/categories", this.endpoints.internal.mod.page.categories.slashManageCategoriesRemoveRoute)
+                    }
+                }
             }
         }
-        if (config.getData("publicAPI")) { // public endpoint
-            { // v1
+        if (config.getData("publicAPI")) {
+            {
                 const publicEndpointV1 = apiEndpoint.concat("/v1");
-                this.routes.get(publicEndpointV1, this.endpoints.api.v1.getMethod.slashRoute)
-                    .get(`${publicEndpointV1}/categories`, this.endpoints.api.v1.getMethod.slashCategoriesRoute)
-                    .get(`${publicEndpointV1}/items`, this.endpoints.api.v1.getMethod.slashItemsRoute);
+                this.routes.get(publicEndpointV1, this.endpoints.public.v1.getMethod.slashRoute)
+                    .get(`${publicEndpointV1}/categories`, this.endpoints.public.v1.getMethod.slashCategoriesRoute)
+                    .get(`${publicEndpointV1}/items`, this.endpoints.public.v1.getMethod.slashItemsRoute);
             }
         }
     }

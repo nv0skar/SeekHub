@@ -14,9 +14,9 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import { customAlphabet as generateID } from "https://deno.land/x/nanoid/customAlphabet.ts";
-import { encode, decode } from "https://deno.land/std/encoding/base64.ts"
-import * as bcrypt from "https://deno.land/x/bcrypt/mod.ts";
+import { customAlphabet as generateID } from "https://deno.land/x/nanoid@v3.0.0/customAlphabet.ts";
+import { encode, decode } from "https://deno.land/std@0.123.0/encoding/base64.ts"
+import * as bcrypt from "https://deno.land/x/bcrypt@v0.3.0/mod.ts";
 import { config } from "./config.ts"
 
 const maxSessionTime = 28800;

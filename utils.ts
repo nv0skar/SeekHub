@@ -14,8 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import { bold, red, cyan, yellow } from "https://deno.land/std/fmt/colors.ts";
-import { parse } from "https://deno.land/x/tinyargs/mod.ts"
+import { bold, red, cyan, yellow } from "https://deno.land/std@0.139.0/fmt/colors.ts";
+import { parse } from "https://deno.land/x/tinyargs@v0.1.4/mod.ts"
 import { config } from "./config.ts"
 import { composer } from "./composer.ts";
 

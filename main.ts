@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import { bold, green, white } from "https://deno.land/std/fmt/colors.ts";
+import { bold, green, white } from "https://deno.land/std@0.139.0/fmt/colors.ts";
 import { config } from "./config.ts"
 import { handler } from "./handler.ts"
 import { cli } from "./utils.ts"
