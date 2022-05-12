@@ -16,7 +16,7 @@
 
 import { bold, red, yellow } from "https://deno.land/std@0.118.0/fmt/colors.ts";
 import { Application, Router, RouterContext } from "https://deno.land/x/oak/mod.ts";
-import { config } from "./config.ts"
+import { config, apiEndpoint } from "./config.ts"
 import { secrets } from "./secrets.ts"
 import { renderer, debug as debugHandler } from "./utils.ts"
 
@@ -224,17 +224,21 @@ export class handler {
 
     private route2Route() {
         this.routes.get("/", this.endpoints.internal.getMethod.slashRoute)
-        .get("/manage", this.endpoints.internal.getMethod.slashManageRoute)
-        // .post("/manage", this.endpoints.internal.postMethod.slashManageRoute)
-        .post("/manage/secret", this.endpoints.internal.postMethod.slashManageSecretRoute)
-        .post("/manage/session", this.endpoints.internal.postMethod.slashManageSessionRoute)
-        .post("/setup", this.endpoints.internal.postMethod.slashSetupRoute);
-        if (config.getData("publicAPI")) {
-            {
-                const apiV1 = "/api/v1";
-                this.routes.get(apiV1, this.endpoints.api.v1.getMethod.slashRoute);
-                this.routes.get(`${apiV1}/categories`, this.endpoints.api.v1.getMethod.slashCategoriesRoute);
-                this.routes.get(`${apiV1}/items`, this.endpoints.api.v1.getMethod.slashItemsRoute);
+            .post("/setup", this.endpoints.internal.postMethod.slashSetupRoute);
+        { // Private
+            this.routes.get("/manage", this.endpoints.internal.getMethod.slashManageRoute);
+            { // API
+                this.routes.post("/manage/secret", this.endpoints.internal.postMethod.slashManageSecretRoute)
+                    // .post("/manage", this.endpoints.internal.postMethod.slashManageRoute)
+                    .post("/manage/session", this.endpoints.internal.postMethod.slashManageSessionRoute)
+            }
+        }
+        if (config.getData("publicAPI")) { // Public API
+            { // v1
+                const publicEndpointV1 = apiEndpoint.concat("/v1");
+                this.routes.get(publicEndpointV1, this.endpoints.api.v1.getMethod.slashRoute)
+                    .get(`${publicEndpointV1}/categories`, this.endpoints.api.v1.getMethod.slashCategoriesRoute)
+                    .get(`${publicEndpointV1}/items`, this.endpoints.api.v1.getMethod.slashItemsRoute);
             }
         }
     }

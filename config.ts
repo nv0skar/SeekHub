@@ -18,6 +18,7 @@ import { red, cyan } from "https://deno.land/std@0.118.0/fmt/colors.ts";
 import { renderer, special, debug as debugHandler } from "./utils.ts"
 
 const netDefaults: [string, number] = ["127.0.0.1", 2000];
+export const apiEndpoint = "/api"
 
 const file2SaveConfig = "./config.json";
 export const configKeys = ["hostname", "port", "id", "masterKey", "tempKey", "sessionTime", "publicAPI", "setup", "title", "name", "navTitle", "categories", "items", "extraInfo", "legalNotice"];
