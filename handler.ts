@@ -295,9 +295,10 @@ export class handler {
         this.routes.get("/", this.endpoints.slashRoute)
             .post("/setup", this.endpoints.internal.slashSetupRoute);
         {
-            this.routes.get("/manage", this.endpoints.internal.mod.slashManageRoute);
             {
-                this.routes.post("/manage", this.endpoints.internal.mod.slashManageRoute)
+                this.routes
+                    .get("/manage", this.endpoints.internal.slashManageRoute)
+                    .post("/manage", this.endpoints.internal.mod.slashManageRoute)
                     .post("/manage/secret", this.endpoints.internal.mod.slashManageSecretRoute)
                     .post("/manage/session", this.endpoints.internal.mod.slashManageSessionRoute)
                 {
