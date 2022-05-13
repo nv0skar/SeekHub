@@ -16,7 +16,7 @@
 
 import { bold, red, yellow } from "https://deno.land/std@0.139.0/fmt/colors.ts";
 import { Application, Router, RouterContext } from "https://deno.land/x/oak@v10.1.0/mod.ts";
-import { config, apiEndpoint, categoryStructure } from "./config.ts"
+import { config, apiEndpoint, categoryStructure, itemStructure } from "./config.ts"
 import { secrets } from "./secrets.ts"
 import { renderer, debug as debugHandler } from "./utils.ts"
 
@@ -196,6 +196,81 @@ export class handler {
                             }
                         }
                     }
+
+                    static items = class {
+
+                        static slashManageItemsGetRoute(request: requestContext) {
+                            if (!config.getData("setup")) return
+                            if (secrets.tempKey.match(request.request.headers.get("Authorization") ?? "")) {
+                                handler.utils.requestInformer(request.request.ip, request.request.headers.get("user-agent"), request.request.url.pathname, request.request.method);
+                                request.response.type = "application/json"
+                                request.response.body = { items: (config.getData("items") as itemStructure[]) };
+                            }
+                        }
+
+                        static async slashManageItemsAddRoute(request: requestContext) {
+                            if (!config.getData("setup")) return
+                            if (secrets.tempKey.match(request.request.headers.get("Authorization") ?? "")) {
+                                handler.utils.requestInformer(request.request.ip, request.request.headers.get("user-agent"), request.request.url.pathname, request.request.method);
+                                request.response.type = "application/json"
+                                if (request.request.body().type == "json") {
+                                    try {
+                                        const value2Retrieve = "items";
+                                        const dataParsed: { name: string, value: itemStructure[] }[] = await request.request.body().value;
+                                        for (const i in dataParsed) {
+                                            if (dataParsed[i].name === value2Retrieve) {
+                                                for (const o in dataParsed[i].value) {
+                                                    let oldItem: itemStructure | undefined;
+                                                    await config.updateConfig([value2Retrieve, (config.getData("items") as itemStructure[]).filter((element) => {
+                                                        if (element.id !== dataParsed[i].value[o].id) {
+                                                            return true
+                                                        } oldItem = element; return false
+                                                    })], false)
+                                                    dataParsed[i].value[o] = Object.assign(oldItem ?? {}, dataParsed[i].value[o]);
+                                                }
+                                                await config.updateConfig(["items", (dataParsed[i].value.concat((config.getData("items") as itemStructure[]))) ?? config.getData("items")], false);
+                                                request.response.body = { status: "success" };
+                                                return
+                                            }
+                                        }
+                                        // deno-lint-ignore no-empty
+                                    } catch { }
+                                }
+                                request.response.status = 500;
+                                request.response.body = { status: "failed" };
+                            } else {
+                                request.response.status = 500;
+                                request.response.body = { status: "badAuth" };
+                            }
+                        }
+
+                        static async slashManageItemsRemoveRoute(request: requestContext) {
+                            if (!config.getData("setup")) return
+                            if (secrets.tempKey.match(request.request.headers.get("Authorization") ?? "")) {
+                                handler.utils.requestInformer(request.request.ip, request.request.headers.get("user-agent"), request.request.url.pathname, request.request.method);
+                                request.response.type = "application/json"
+                                if (request.request.body().type == "json") {
+                                    try {
+                                        const value2Retrieve = "items";
+                                        const dataParsed: { name: string, value: { id: number }[] }[] = await request.request.body().value;
+                                        for (const i in dataParsed) {
+                                            if (dataParsed[i].name === value2Retrieve) {
+                                                for (const o in dataParsed[i].value) { await config.updateConfig(["items", (config.getData("items") as itemStructure[]).filter((element) => { return (element.id !== dataParsed[i].value[o].id) })], false) }
+                                                request.response.body = { status: "success" };
+                                                return
+                                            }
+                                        }
+                                        // deno-lint-ignore no-empty
+                                    } catch { }
+                                }
+                                request.response.status = 500;
+                                request.response.body = { status: "failed" };
+                            } else {
+                                request.response.status = 500;
+                                request.response.body = { status: "badAuth" };
+                            }
+                        }
+                    }
                 }
 
                 static async slashManageSecretRoute(request: requestContext) {
@@ -307,6 +382,12 @@ export class handler {
                             .get("/manage/categories", this.endpoints.internal.mod.page.categories.slashManageCategoriesGetRoute)
                             .post("/manage/categories", this.endpoints.internal.mod.page.categories.slashManageCategoriesAddRoute)
                             .delete("/manage/categories", this.endpoints.internal.mod.page.categories.slashManageCategoriesRemoveRoute)
+                    }
+                    {
+                        this.routes
+                            .get("/manage/items", this.endpoints.internal.mod.page.items.slashManageItemsGetRoute)
+                            .post("/manage/items", this.endpoints.internal.mod.page.items.slashManageItemsAddRoute)
+                            .delete("/manage/items", this.endpoints.internal.mod.page.items.slashManageItemsRemoveRoute)
                     }
                 }
             }
