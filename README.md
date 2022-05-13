@@ -16,7 +16,7 @@ $ deno run --allow-read --allow-write --allow-net main.ts
 ```
 After running that, the server should be now listening on port `2000` as default.
 
-If you go to the website you'll find the not completed yet setup page. I created an example config file for testing, to bypass the setup page and see an example portfolio just rename `example_config.json` to `config.json` and rerun the server. After that you should be able to access the main page!
+I created an example config file for testing, to bypass the setup page and see an example portfolio just rename `example.json` to `config.json` and rerun the server. After that you should be able to access the main page!
 
 ## <a name="contribution"></a>Contribution 🌈
 If you want, you can contribute to make this a better project!
@@ -24,4 +24,3 @@ If you want, you can contribute to make this a better project!
 ## <a name="development"></a>Development 🧑‍💻
 ### <a name="developmentTODO"></a>TODO 🛸
 - [ ] Implement the dashboard
-- [x] Implement REST API
