@@ -328,6 +328,33 @@ export class handler {
                     request.response.status = 500;
                     request.response.body = { status: "failed" };
                 }
+
+                static async slashManageEndSessionRoute(request: requestContext) {
+                    if (!config.getData("setup")) return
+                    handler.utils.requestInformer(request.request.ip, request.request.headers.get("user-agent"), request.request.url.pathname, request.request.method);
+                    request.response.type = "application/json"
+                    if (request.request.body().type == "json") {
+                        try {
+                            const value2Retrieve = "token";
+                            const dataParsed: { name: string, value: string }[] = await request.request.body().value;
+                            for (const o in dataParsed) {
+                                if (dataParsed[o].name === value2Retrieve) {
+                                    if (dataParsed[o].value === "") {
+                                        console.log(yellow(bold("(Manage)")), `The data sent in the ${value2Retrieve} value wasn't valid!`);
+                                        request.response.status = 500;
+                                        request.response.body = { status: "failed" };
+                                    }
+                                    secrets.tempKey.endSession();
+                                    request.response.body = { status: "success" };
+                                    return
+                                }
+                            }
+                            // deno-lint-ignore no-empty
+                        } catch { }
+                    }
+                    request.response.status = 500;
+                    request.response.body = { status: "failed" };
+                }
             }
         }
 
@@ -376,6 +403,7 @@ export class handler {
                     .post("/manage", this.endpoints.internal.mod.slashManageRoute)
                     .post("/manage/secret", this.endpoints.internal.mod.slashManageSecretRoute)
                     .post("/manage/session", this.endpoints.internal.mod.slashManageSessionRoute)
+                    .post("/manage/session/end", this.endpoints.internal.mod.slashManageEndSessionRoute)
                 {
                     {
                         this.routes

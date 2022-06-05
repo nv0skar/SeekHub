@@ -17,11 +17,17 @@
 -->
 
 <script>
+    const contexts = [
+      ["login", () => { setButtonAction("login", auth, auth); }], 
+      ["preferences", () => { setSubContext("preferencesPortfolio"); setButtonAction("", () => {}, () => {}); }],
+    ];
+
+    const subcontexts = [
+      ["preferencesPortfolio", () => { setButtonAction("", () => {}, () => {}); }],
+      ["preferencesSettings", () => { setButtonAction("", () => {}, () => {}); }]
+    ];
+
     const errorInformer = (message) => alert(`${message}`);
-
-    const setTitle = (data) => document.getElementById("title").innerText = data;
-
-    const setSubtitle = (data) => document.getElementById("subtitle").innerText = data;
 
     const setButtonAction = (context, funcButton, funcKey) => {
       const contextWithButtons = ["login"];
@@ -32,14 +38,16 @@
     }
 
     const setContext = (context) => {
-      const contexts = [["login", () => {
-        setTitle("Hi!"); setSubtitle("In order to continue you'll have to authenticate!"); setButtonAction("login", auth, auth);
-      }], ["config", () => {
-        setTitle("Welcome!"); setSubtitle("Under construction 🏗"); setButtonAction("", () => {}, () => {});
-      }]];
       for (const i in contexts) {
         if (contexts[i][0] === context) { contexts[i][1](); document.getElementById(context).style.display = "block"; }
         else document.getElementById(contexts[i][0]).style.display = "none";
+      }
+    }
+
+    const setSubContext = (context) => {
+      for (const i in subcontexts) {
+        if (subcontexts[i][0] === context) { subcontexts[i][1](); document.getElementById(context).style.display = "block"; document.getElementById(`${context}Activator`).classList.add("active"); }
+        else { document.getElementById(subcontexts[i][0]).style.display = "none"; document.getElementById(`${subcontexts[i][0]}Activator`).classList.remove("active"); }
       }
     }
 
@@ -57,7 +65,22 @@
       if (response["status"] === "invalid") { errorInformer("Opps! Invalid credentials 😮"); return; }
       setButtonAction("login", () => {}, () => {});
       localStorage.setItem("sessionToken", response["token"]);
-      authenticated = true; setContext("config");
+      authenticated = true;
+      document.getElementById("masterKeyInput").value = "";
+      setContext("preferences");
+    }
+
+    const logout = async () => {
+      const sessionToken = localStorage.getItem("sessionToken");
+      if (sessionToken === null) { authenticated = false; setContext("login"); return };
+      try {
+        const response = await request2Server("POST", "/manage/session/end", (JSON.stringify([{name: "token", value: sessionToken}])))
+        if (response["status"] === undefined || response["status"] === "failed") { errorInformer("Opps! There was an error while trying to tell the server to invalidate the session (only local session will be invalidated) 😮"); return; }
+      } catch {
+        errorInformer("Opps! Something went wrong 😮");
+      }
+      localStorage.removeItem("sessionToken"); authenticated = false;
+      setContext("login")
     }
 
     const checkSessionToken = async () => {
@@ -72,7 +95,7 @@
     window.onload = async () => {
       await checkSessionToken();
       if (!authenticated) setContext("login");
-      else { setContext("config"); }
+      else { setContext("preferences"); }
     };
 
     let authenticated = false;

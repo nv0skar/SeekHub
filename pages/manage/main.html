@@ -28,7 +28,6 @@
   <body style="background-color: rgba(0, 0, 0, 0); scroll-margin-top: 60px;" id="mainContent">
     <noscript>
       <style>
-        #manageContainer { display: none; }
         #opps { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); }
         @media (prefers-color-scheme: dark) {
           #opps { color: white; }
@@ -39,16 +38,37 @@
         </style>
       <h1 id="opps">Opps! without JS this page doesn't work! 😮</h1>
     </noscript>
-    <div id="manageContainer">
-      <h1 id="title"></h1>
+    <div id="login">
+      <h1 id="loginTitle">Hi!</h1>
       <hr>
-      <h2 id="subtitle"></h2>
-      <div id="config"></div>
-      <div id="login">
+      <h2 id="loginSubtitle">In order to continue you'll have to authenticate!</h2>
+      <div id="loginSubContainer">
         <div class="form-group" id="masterKeyContainer">
           <input type="password" class="form-control" name="masterKey" placeholder="Master Key" required="required" id="masterKeyInput">
         </div>
         <input class="btn btn-primary btn-block" type="submit" value="Login" id="loginButton">
+      </div>
+    </div>
+    <div id="preferences">
+      <nav class="navbar">
+        <a class="navbar-brand" style="color:#3893D4;text-shadow: -2px 2px #3815D4;font-size:22px;">SeekHub</a>
+        <ul class="navbar-nav ml-auto">
+          <li id="preferencesPortfolioActivator" class="nav-item invert" onclick="setSubContext('preferencesPortfolio');">
+            <a class="nav-link">Portfolio</a>
+          </li>
+          <li id="preferencesSettingsActivator" class="nav-item invert" onclick="setSubContext('preferencesSettings');"">
+            <a class="nav-link">Settings</a>
+          </li>
+          <li class="nav-item" onclick="logout();"">
+            <a class="nav-link">🚪</a>
+          </li>
+        </ul>
+      </nav>
+      <div id="preferencesPortfolio">
+        <center class="invert">This is the portfolio view</center>
+      </div>
+      <div id="preferencesSettings">
+        <center class="invert">This is the settings view</center>
       </div>
     </div>
   </body>

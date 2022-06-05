@@ -17,7 +17,12 @@
 -->
 
 <style>
-    #manageContainer {
+    p, span, .invert {
+      mix-blend-mode: difference;
+      filter: invert(100%);
+    }
+
+    #login {
       position: relative;
       width: 25%;
       height: min-content;
@@ -30,19 +35,25 @@
       border-radius: 12px;
     }
 
-    #title {
+    #loginTitle {
       font-weight: bold;
       color: transparent;
       background-clip: text;
     }
 
-    #subtitle {
+    #loginSubtitle {
       font-size: large;
       font-weight: bold;
     }
 
-    #login, #config {
+    #login, #preferences, #preferencesPortfolio, #preferencesSettings {
       display: none;
+    }
+
+    #navbarTitle {
+      font-weight: 900;
+      color: black;
+      text-shadow: -0.5px 0.5px grey;
     }
 
     #opps {
@@ -83,7 +94,7 @@
     }
 
     @media screen and (max-width: 1024px) {
-      #manageContainer {
+      #login {
         width: 75%;
       }
     }
@@ -103,16 +114,19 @@
       .btn {
         color: rgb(4, 57, 77) !important;
       }
-      #manageContainer {
+      #login {
         background-color: rgba(17, 25, 40, 0.75);
         border: 1px solid rgba(255, 255, 255, 0.125);
       }
-      #title {
+      #loginTitle {
         background-image: linear-gradient(45deg, rgb(169, 199, 234), rgb(131, 210, 255));
         background-image: -webkit-linear-gradient(45deg, rgb(169, 199, 234), rgb(131, 210, 255));
       }
-      #subtitle {
+      #loginSubtitle {
         color: rgb(169, 199, 234, 0.75);
+      }
+      nav {
+        background-color: rgba(24, 24, 24, 0.8) !important;
       }
     }
     
@@ -129,16 +143,19 @@
       .btn {
         color: rgb(99, 111, 149) !important;
       }
-      #manageContainer {
+      #login {
         background-color: rgba(216, 228, 238, 0.75);
         border: 1px solid rgba(0, 0, 0, 0.125);
       }
-      #title {
+      #loginTitle {
         background-image: linear-gradient(45deg, rgba(7, 43, 116, 0.75), rgba(17, 70, 63, 0.75));
         background-image: -webkit-linear-gradient(45deg, rgba(7, 43, 116, 0.75), rgba(17, 70, 63, 0.75));
       }
-      #subtitle {
+      #loginSubtitle {
         color: rgb(7, 43, 116, 0.75);
+      }
+      nav {
+        background-color: rgba(255, 255, 255, 0.80) !important;
       }
     }
 </style>
