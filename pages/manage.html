@@ -1,0 +1,339 @@
+<!--
+  SeekHub
+  Copyright (C) 2021 ItsTheGuy
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+<!DOCTYPE html>
+<html lang="en" class="has-navbar-fixed-top" style="overflow-x: hidden;" id="main">
+
+<head id="foundation">
+  <meta charset="utf-8">
+  <title>SeekHub</title>
+  <link rel="canonical" href="">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/halfmoon@1.1.1/css/halfmoon-variables.min.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    p,
+    span,
+    .invert {
+      mix-blend-mode: difference;
+      filter: invert(100%);
+    }
+
+    #login {
+      position: relative;
+      width: 25%;
+      height: min-content;
+      margin: 0 auto;
+      top: 50%;
+      padding: 22px;
+      transform: translateY(-50%);
+      backdrop-filter: blur(25px) saturate(0%);
+      -webkit-backdrop-filter: blur(25px) saturate(0%);
+      border-radius: 12px;
+    }
+
+    #loginTitle {
+      font-weight: bold;
+      color: transparent;
+      background-clip: text;
+    }
+
+    #loginSubtitle {
+      font-size: large;
+      font-weight: bold;
+    }
+
+    #login,
+    #preferences,
+    #preferencesPortfolio,
+    #preferencesSettings {
+      display: none;
+    }
+
+    #navbarTitle {
+      font-weight: 900;
+      color: black;
+      text-shadow: -0.5px 0.5px grey;
+    }
+
+    #opps {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .form-text {
+      font-size: small;
+      font-weight: 300;
+    }
+
+    .btn {
+      font-weight: bold;
+      background-color: rgb(169, 199, 234) !important;
+      border-color: rgba(155, 170, 207, 0.75) !important;
+      backdrop-filter: blur(25px) saturate(0%);
+      -webkit-backdrop-filter: blur(25px) saturate(0%);
+    }
+
+    h1,
+    h2 {
+      text-align: center;
+    }
+
+    form {
+      width: 100%;
+    }
+
+    input {
+      font-size: 16px;
+    }
+
+    hr {
+      mix-blend-mode: difference;
+      filter: invert(100%);
+    }
+
+    @media screen and (max-width: 1024px) {
+      #login {
+        width: 75%;
+      }
+    }
+
+    @media (prefers-color-scheme: dark) {
+      html {
+        background-color: rgb(14, 14, 14) !important;
+      }
+
+      label,
+      .form-text {
+        color: rgb(169, 199, 234, 0.75);
+      }
+
+      .form-control {
+        background-color: rgba(255, 255, 255, 0.75);
+        border-color: rgb(241, 241, 241);
+        filter: invert(100%);
+      }
+
+      .btn {
+        color: rgb(4, 57, 77) !important;
+      }
+
+      #login {
+        background-color: rgba(17, 25, 40, 0.75);
+        border: 1px solid rgba(255, 255, 255, 0.125);
+      }
+
+      #loginTitle {
+        background-image: linear-gradient(45deg, rgb(169, 199, 234), rgb(131, 210, 255));
+        background-image: -webkit-linear-gradient(45deg, rgb(169, 199, 234), rgb(131, 210, 255));
+      }
+
+      #loginSubtitle {
+        color: rgb(169, 199, 234, 0.75);
+      }
+
+      nav {
+        background-color: rgba(24, 24, 24, 0.8) !important;
+      }
+    }
+
+    @media (prefers-color-scheme: light) {
+      html {
+        background-color: rgb(255, 255, 255) !important;
+      }
+
+      label,
+      .form-text {
+        color: rgba(0, 0, 0, 0.75);
+      }
+
+      .form-control {
+        background-color: rgba(255, 255, 255, 0.75);
+      }
+
+      .btn {
+        color: rgb(99, 111, 149) !important;
+      }
+
+      #login {
+        background-color: rgba(216, 228, 238, 0.75);
+        border: 1px solid rgba(0, 0, 0, 0.125);
+      }
+
+      #loginTitle {
+        background-image: linear-gradient(45deg, rgba(7, 43, 116, 0.75), rgba(17, 70, 63, 0.75));
+        background-image: -webkit-linear-gradient(45deg, rgba(7, 43, 116, 0.75), rgba(17, 70, 63, 0.75));
+      }
+
+      #loginSubtitle {
+        color: rgb(7, 43, 116, 0.75);
+      }
+
+      nav {
+        background-color: rgba(255, 255, 255, 0.80) !important;
+      }
+    }
+  </style>
+  <script>
+    const contexts = [
+      ["login", () => { setButtonAction("login", auth, auth); }],
+      ["preferences", () => { setSubContext("preferencesPortfolio"); setButtonAction("", () => { }, () => { }); }],
+    ];
+
+    const subcontexts = [
+      ["preferencesPortfolio", () => { setButtonAction("", () => { }, () => { }); }],
+      ["preferencesSettings", () => { setButtonAction("", () => { }, () => { }); }]
+    ];
+
+    const errorInformer = (message) => alert(`${message}`);
+
+    const setButtonAction = (context, funcButton, funcKey) => {
+      const contextWithButtons = ["login"];
+      for (const i in contextWithButtons) {
+        if (contextWithButtons[i] === context) { document.getElementById(`${context}Button`).onclick = () => { funcButton() }; }
+        else document.getElementById(`${contextWithButtons[i]}Button`).onclick = {};
+      } document.onkeypress = (key) => { if (key.code === "Enter") funcKey(); }
+    }
+
+    const setContext = (context) => {
+      for (const i in contexts) {
+        if (contexts[i][0] === context) { contexts[i][1](); document.getElementById(context).style.display = "block"; }
+        else document.getElementById(contexts[i][0]).style.display = "none";
+      }
+    }
+
+    const setSubContext = (context) => {
+      for (const i in subcontexts) {
+        if (subcontexts[i][0] === context) { subcontexts[i][1](); document.getElementById(context).style.display = "block"; document.getElementById(`${context}Activator`).classList.add("active"); }
+        else { document.getElementById(subcontexts[i][0]).style.display = "none"; document.getElementById(`${subcontexts[i][0]}Activator`).classList.remove("active"); }
+      }
+    }
+
+    const request2Server = async (method, route, data) => {
+      const request = fetch(new Request(route, { method: 'POST', headers: { 'content-type': 'application/json' }, body: data }))
+        .then((response) => { return response.clone().json() })
+        .catch(() => { return });
+      return request
+    }
+
+    const auth = async () => {
+      const response = await request2Server("POST", "/manage/secret", (JSON.stringify([{ name: "masterKey", value: (document.getElementById("masterKeyInput").value) }])))
+      if (response === undefined) { errorInformer("Opps! Something went wrong 😮"); return; };
+      if (response["status"] === undefined || response["status"] === "failed") { errorInformer("Opps! Unexpected response 😮"); return; }
+      if (response["status"] === "invalid") { errorInformer("Opps! Invalid credentials 😮"); return; }
+      setButtonAction("login", () => { }, () => { });
+      localStorage.setItem("sessionToken", response["token"]);
+      authenticated = true;
+      document.getElementById("masterKeyInput").value = "";
+      setContext("preferences");
+    }
+
+    const logout = async () => {
+      const sessionToken = localStorage.getItem("sessionToken");
+      if (sessionToken === null) { authenticated = false; setContext("login"); return };
+      try {
+        const response = await request2Server("POST", "/manage/session/end", (JSON.stringify([{ name: "token", value: sessionToken }])))
+        if (response["status"] === undefined || response["status"] === "failed") { errorInformer("Opps! There was an error while trying to tell the server to invalidate the session (only local session will be invalidated) 😮"); return; }
+      } catch {
+        errorInformer("Opps! Something went wrong 😮");
+      }
+      localStorage.removeItem("sessionToken"); authenticated = false;
+      setContext("login")
+    }
+
+    const checkSessionToken = async () => {
+      const sessionToken = localStorage.getItem("sessionToken");
+      if (sessionToken === null) return;
+      const sessionValidation = await request2Server("POST", "/manage/session", (JSON.stringify([{ name: "token", value: sessionToken }])))
+      if (sessionValidation === undefined || sessionValidation["status"] === undefined || sessionValidation["status"] === "failed") { errorInformer("Opps! Something went wrong when trying to check the session code 😮"); return; };
+      if (sessionValidation["valid"] === true) { authenticated = true; return; }
+      else { localStorage.removeItem("sessionToken"); }
+    }
+
+    window.onload = async () => {
+      await checkSessionToken();
+      if (!authenticated) setContext("login");
+      else { setContext("preferences"); }
+    };
+
+    let authenticated = false;
+  </script>
+</head>
+
+<body style="background-color: rgba(0, 0, 0, 0); scroll-margin-top: 60px;" id="mainContent">
+  <noscript>
+    <style>
+      #opps {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+
+      @media (prefers-color-scheme: dark) {
+        #opps {
+          color: white;
+        }
+      }
+
+      @media (prefers-color-scheme: light) {
+        #opps {
+          color: black;
+        }
+      }
+    </style>
+    <h1 id="opps">Opps! without JS this page doesn't work! 😮</h1>
+  </noscript>
+  <div id="login">
+    <h1 id="loginTitle">Hi!</h1>
+    <hr>
+    <h2 id="loginSubtitle">In order to continue you'll have to authenticate!</h2>
+    <div id="loginSubContainer">
+      <div class="form-group" id="masterKeyContainer">
+        <input type="password" class="form-control" name="masterKey" placeholder="Master Key" required="required"
+          id="masterKeyInput">
+      </div>
+      <input class="btn btn-primary btn-block" type="submit" value="Login" id="loginButton">
+    </div>
+  </div>
+  <div id="preferences">
+    <nav class="navbar">
+      <a class="navbar-brand" style="color:#3893D4;text-shadow: -2px 2px #3815D4;font-size:22px;">SeekHub</a>
+      <ul class="navbar-nav ml-auto">
+        <li id="preferencesPortfolioActivator" class="nav-item invert" onclick="setSubContext('preferencesPortfolio');">
+          <a class="nav-link">Portfolio</a>
+        </li>
+        <li id="preferencesSettingsActivator" class="nav-item invert" onclick="setSubContext('preferencesSettings');"">
+            <a class=" nav-link">Settings</a>
+        </li>
+        <li class="nav-item" onclick="logout();"">
+            <a class=" nav-link">🚪</a>
+        </li>
+      </ul>
+    </nav>
+    <div id="preferencesPortfolio">
+      <center class="invert">This is the portfolio view</center>
+    </div>
+    <div id="preferencesSettings">
+      <center class="invert">This is the settings view</center>
+    </div>
+  </div>
+</body>
+
+</html>

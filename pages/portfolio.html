@@ -1,0 +1,319 @@
+<!--
+  SeekHub
+  Copyright (C) 2021 ItsTheGuy
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+<!DOCTYPE html>
+<html lang="en" class="has-navbar-fixed-top" style="overflow-x: hidden;" id="main">
+
+<head id="foundation">
+  <meta charset="utf-8">
+  <link rel="icon" href="">
+  <link rel="shortcut icon" href="">
+  <title>{{title}}</title>
+  <meta name="description" content="">
+  <meta property="og:title" content="{{title}}" />
+  <meta property="og:description" content="">
+  <meta property="og:image" content="">
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="" />
+  <meta property="og:locale" content="en_US" />
+  <link rel="canonical" href="">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.2/css/bulma.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Gemunu+Libre:wght@800&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    h1,
+    h2,
+    li,
+    span {
+      mix-blend-mode: difference;
+      filter: invert(100%);
+    }
+
+    nav {
+      backdrop-filter: blur(56px);
+      -webkit-backdrop-filter: blur(56px);
+      box-shadow: 0 2px 2px 0 rgba(50, 34, 56, 0.2);
+    }
+
+    hr {
+      height: 1px;
+    }
+
+    li {
+      font-weight: 600;
+    }
+
+    li span {
+      color: grey;
+      font-weight: 500;
+    }
+
+    h2 hr {
+      margin-top: 0px;
+    }
+
+    #navbarTitle {
+      font-weight: 900;
+      color: black;
+      text-shadow: -0.5px 0.5px grey;
+    }
+
+    #mainSection {
+      position: relative;
+      margin-top: -26px;
+    }
+
+    #navbarItemContainer {
+      align-content: initial;
+    }
+
+    #extraInfo {
+      background-color: rgba(0, 0, 0, 0);
+      width: 75%;
+      position: relative;
+      left: 50%;
+      transform: translate(-50%, 0%);
+    }
+
+    .navbar-item.resize {
+      text-align: center !important;
+      font-weight: 600 !important;
+    }
+
+    .navbar-item:hover {
+      color: black !important;
+      background-color: rgba(0, 0, 0, 0) !important;
+    }
+
+    .footer {
+      padding: 3rem 2rem 4rem !important;
+    }
+
+    .placeholder {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .subtitle {
+      margin-bottom: -22px !important;
+    }
+
+    .manage {
+      font-weight: 300;
+      line-height: 14px;
+      margin-top: 36px;
+    }
+
+    div .productContainer {
+      position: relative;
+      display: flex;
+      top: -20px;
+      min-width: 300px;
+    }
+
+    div .productContainer>.imageContainer {
+      background-color: rgb(219, 219, 219);
+      float: left;
+      width: 70px;
+      height: 70px;
+      position: absolute;
+      top: 6px;
+      border-radius: 12px;
+    }
+
+    div .productContainer>.infoContainer {
+      position: relative;
+      top: 2px;
+      margin-left: 82.5px;
+    }
+
+    .infoContainer>div>.productName {
+      color: rgb(20, 20, 20);
+      font-size: x-large;
+      font-weight: 900;
+      margin-right: 2px;
+    }
+
+    .infoContainer>div>.productName {
+      color: rgb(20, 20, 20);
+      font-size: x-large;
+      font-weight: 900;
+      margin-right: 2px;
+    }
+
+    .infoContainer>div>.productPrice {
+      position: relative;
+      font-size: 18px;
+      font-family: 'Gemunu Libre', sans-serif;
+      font-weight: 800;
+      top: -2px;
+    }
+
+    .infoContainer>.productDescription {
+      font-size: medium;
+      font-weight: 400;
+      position: relative;
+      top: -4px;
+    }
+
+    .infoContainer>.productAllergens {
+      font-size: small;
+      font-weight: 300;
+      position: relative;
+      top: -8px;
+    }
+
+    .infoContainer>div>.productName {
+      color: rgb(20, 20, 20);
+      font-size: x-large;
+      font-weight: 900;
+      margin-right: 2px;
+    }
+
+    .productImage {
+      border-radius: 12px;
+      width: 70px;
+      height: 70px;
+      image-rendering: optimizeSpeed;
+    }
+
+    @media screen and (max-width: 1024px) {
+      #mainSection {
+        position: relative;
+        margin-top: -26px;
+      }
+
+      #navbarContainer {
+        display: flex;
+      }
+
+      #footerNotices {
+        width: 75%;
+      }
+
+      .navbar {
+        display: flex;
+      }
+
+      .navbar-item.resize {
+        text-align: center;
+        font-weight: 400;
+        font-size: small;
+        padding-top: 17.5px;
+      }
+    }
+
+    @media screen and (max-width: 612px) {
+      #mainSection {
+        position: relative;
+        margin-top: -32px;
+      }
+
+      #navbarItemContainer {
+        align-content: center;
+      }
+
+      #footerNotices {
+        width: 85%;
+      }
+
+      .navbar-item.resize {
+        display: none;
+      }
+    }
+
+    @media (prefers-color-scheme: dark) {
+      html {
+        background-color: rgb(14, 14, 14) !important;
+      }
+
+      nav {
+        background-color: rgba(24, 24, 24, 0.8) !important;
+      }
+
+      footer {
+        background-color: black !important;
+      }
+    }
+
+    @media (prefers-color-scheme: light) {
+      html {
+        background-color: rgb(255, 255, 255) !important;
+      }
+
+      nav {
+        background-color: rgba(255, 255, 255, 0.80) !important;
+      }
+
+      footer {
+        background-color: #f5f5f5 !important;
+      }
+    }
+  </style>
+  <script>
+    const switchVisibility2Placeholder = (id) => document.getElementById("imagePlaceholderProduct" + id).style.display = 'block';
+
+    const setScrollingPosition = (save = false) => {
+      if (!save) {
+        if (((Math.floor(Date.now() / 1000)) - (localStorage.getItem("dateWhenLoaded")) >= 7200)) document.body.scrollTop = 0;
+        else document.body.scrollTop = (localStorage.getItem("scrollingPosition"));
+        localStorage.setItem("dateWhenLoaded", (Math.floor(Date.now() / 1000)));
+      } else localStorage.setItem("scrollingPosition", (document.body.scrollTop));
+    }
+
+    window.onload = () => { setScrollingPosition() };
+    window.onbeforeunload = () => { setScrollingPosition(true); return; };
+  </script>
+</head>
+
+<body style="background-color: rgba(0, 0, 0, 0); scroll-margin-top: 60px;" id="mainContent">
+  <nav class="navbar is-fixed-top" role="navigation" aria-label="main navigation">
+    <div class="navbar-brand">
+      <div class="navbar-item" style="line-height: 15px;">
+        <a href="#mainContent" id="navbarTitle"><span id="title1stLine">{{navTitle1st}}</span><br><span
+            id="title2ndLine">{{navTitle2nd}}</span></a>
+      </div>
+    </div>
+    <div id="navbarSection" style="align-items: stretch; display:flex;"></div>
+    </div>
+  </nav>
+  <section class="section" style="align-content: center;" id="mainSection"></section>
+</body>
+<footer class="footer">
+  <div id="footerContainer" class="content has-text-centered">
+    <article class="message is-link" style="display: {{extraInfoVisibility}};" id="extraInfo">
+      <ol id="extraInfoContainer" style="list-style-position: inside; margin: 0px;"></ol>
+    </article>
+    <div class="has-text-white" style="position: relative; top: 12px; line-height: 22px;">
+      <span style="font-size: 36px; font-weight: 900; color: black;">{{nameFooter}}</span>
+      <br>
+      <span style="font-size: 12px; font-weight: 300; color: black;">{{legalNotice}}</span>
+    </div>
+    <div class="manage">
+      <a style="font-size: 12px; color: grey;" href="/manage"><span>Manage</span></a>
+      <br>
+      <span style="font-size: 8px; color: grey;">{{id}}</span>
+    </div>
+</footer>
+
+</html>

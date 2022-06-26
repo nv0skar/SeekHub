@@ -15,12 +15,13 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import { red, cyan } from "https://deno.land/std@0.139.0/fmt/colors.ts";
+import { dirname, fromFileUrl } from "https://deno.land/std@0.122.0/path/mod.ts";
 import { renderer, special, debug as debugHandler } from "./utils.ts"
 
 const netDefaults: [string, number] = ["127.0.0.1", 2000];
 export const apiEndpoint = "/api"
 
-const file2SaveConfig = "./config.json";
+const file2SaveConfig = "config.json";
 export const configKeys = ["hostname", "port", "id", "masterKey", "tempKey", "sessionTime", "publicAPI", "setup", "title", "name", "navTitle", "categories", "items", "extraInfo", "legalNotice"];
 export type categoryStructure = { tag: string, name: string };
 export type itemStructure = { id: number, type: string, image: string, name: string, description: string, price: string, allergens: string };
@@ -47,7 +48,7 @@ export class config {
 
     static async fetchConfig() {
         try {
-            const retrievedConfigFile: configStructure[] = JSON.parse(await Deno.readTextFile(file2SaveConfig));
+            const retrievedConfigFile: configStructure[] = JSON.parse(await Deno.readTextFile(fromFileUrl(`${dirname(Deno.mainModule)}/${file2SaveConfig}`)));
             config.data = retrievedConfigFile;
             {
                 const configKeysNotInData = configKeys;
@@ -77,7 +78,7 @@ export class config {
                 if (config.data[dataIndex][0] === data2Update[0]) {
                     try {
                         config.data[dataIndex][1] = data2Update[1];
-                        await Deno.writeTextFile(file2SaveConfig, JSON.stringify(config.data));
+                        await Deno.writeTextFile(fromFileUrl(`${dirname(Deno.mainModule)}/${file2SaveConfig}`), JSON.stringify(config.data));
                     } catch (e) {
                         debugHandler.tell(red(`Error while trying to update config file (${e})`));
                     }
@@ -85,7 +86,7 @@ export class config {
                 }
             } else {
             try {
-                await Deno.writeTextFile(file2SaveConfig, JSON.stringify(config.data));
+                await Deno.writeTextFile(fromFileUrl(`${dirname(Deno.mainModule)}/${file2SaveConfig}`), JSON.stringify(config.data));
             } catch (e) {
                 debugHandler.tell(red(`Error while trying to update config file (${e})`));
             }

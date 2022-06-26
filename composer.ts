@@ -14,44 +14,26 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import { dirname, fromFileUrl } from "https://deno.land/std@0.122.0/path/mod.ts";
 import { render } from "https://deno.land/x/mustache_ts@v0.4.1.1/mustache.ts";
 import { DOMParser, Document } from "https://deno.land/x/deno_dom@v0.1.20-alpha/deno-dom-wasm.ts";
 import { config, categoryStructure, itemStructure } from "./config.ts"
 
 export class composer {
     static setup = async function () {
-        const setup = await Deno.readTextFile("./pages/setup/main.html");
-        const foundation = await Deno.readTextFile("./pages/setup/foundation.html");
-        const scripts = await Deno.readTextFile("./pages/setup/scripts.html");
-
-        // deno-lint-ignore prefer-const
-        let composition = new DOMParser().parseFromString(setup, "text/html")!;
-
-        composition.documentElement!.getElementById("foundation")!.innerHTML += new DOMParser().parseFromString(foundation.toString(), "text/html")!.documentElement!.outerHTML.toString();
-        composition.documentElement!.getElementById("foundation")!.innerHTML += new DOMParser().parseFromString(scripts.toString(), "text/html")!.documentElement!.outerHTML.toString();
+        const composition = new DOMParser().parseFromString(await Deno.readTextFile(fromFileUrl(`${dirname(Deno.mainModule)}/pages/setup.html`)), "text/html")!;
 
         return composition.documentElement!.outerHTML;
     }
 
     static manage = async function () {
-        const manage = await Deno.readTextFile("./pages/manage/main.html");
-        const foundation = await Deno.readTextFile("./pages/manage/foundation.html");
-        const scripts = await Deno.readTextFile("./pages/manage/scripts.html");
-
-        // deno-lint-ignore prefer-const
-        let composition = new DOMParser().parseFromString(manage, "text/html")!;
-
-        composition.documentElement!.getElementById("foundation")!.innerHTML += new DOMParser().parseFromString(foundation.toString(), "text/html")!.documentElement!.outerHTML.toString();
-        composition.documentElement!.getElementById("foundation")!.innerHTML += new DOMParser().parseFromString(scripts.toString(), "text/html")!.documentElement!.outerHTML.toString();
+        const composition = new DOMParser().parseFromString(await Deno.readTextFile(fromFileUrl(`${dirname(Deno.mainModule)}/pages/manage.html`)), "text/html")!;
 
         return composition.documentElement!.outerHTML;
     }
 
     static main = class {
         private masterPool: string | undefined = undefined;
-        private mainView: Promise<string> = Deno.readTextFile("./pages/main.html");
-        private foundation: Promise<string> = Deno.readTextFile("./pages/foundation.html");
-        private scripts: Promise<string> = Deno.readTextFile("./pages/scripts.html");
         private navbarItem = `<a class="navbar-item resize" href="#{{id}}"><span style="vertical-align: super;">{{name}}</span></a>`;
         private superContainer = `<div class="columns" id="columnGroup{{num}}"></div>`;
         private sectionContainer = `<div class="column"><section style="scroll-margin-top: 102px;" id="{{id}}"><h2 class="subtitle" style="font-family: Arial, Helvetica, sans-serif; font-display: swap; font-size: 28px; font-weight: 900;">{{name}}</h2><hr><div id="{{id}}Container"></div></section></div><br>`;
@@ -111,13 +93,10 @@ export class composer {
 
         async compose() {
             if (this.masterPool != undefined) return (this.masterPool);
-            const main = render((await this.mainView), { title: (config.getData("title") as string), navTitle1st: (config.getData("navTitle") as string[])[0], navTitle2nd: (config.getData("navTitle") as string[])[1], extraInfoVisibility: ((config.getData("extraInfo") as string[]).length == 0 ? "none" : "block"), nameFooter: (config.getData("name") as string), legalNotice: (config.getData("legalNotice") as string), id: (config.getData("id") as string) });
-
+            const main = render((await Deno.readTextFile(fromFileUrl(`${dirname(Deno.mainModule)}/pages/portfolio.html`))), { title: (config.getData("title") as string), navTitle1st: (config.getData("navTitle") as string[])[0], navTitle2nd: (config.getData("navTitle") as string[])[1], extraInfoVisibility: ((config.getData("extraInfo") as string[]).length == 0 ? "none" : "block"), nameFooter: (config.getData("name") as string), legalNotice: (config.getData("legalNotice") as string), id: (config.getData("id") as string) });
+            
             // deno-lint-ignore prefer-const
             let composition = new DOMParser().parseFromString(main, "text/html")!;
-
-            composition.documentElement!.getElementById("foundation")!.innerHTML += new DOMParser().parseFromString((await this.foundation).toString(), "text/html")!.documentElement!.outerHTML.toString();
-            composition.documentElement!.getElementById("foundation")!.innerHTML += new DOMParser().parseFromString((await this.scripts).toString(), "text/html")!.documentElement!.outerHTML.toString();
 
             this.renderDynamicComponents(composition);
 
