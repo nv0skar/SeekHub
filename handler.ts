@@ -104,14 +104,16 @@ export class handler {
                                 const dataParsed: { name: string, value: string }[] = await request.request.body().value;
                                 for (const i in values2Retrieve) {
                                     for (const o in dataParsed) {
-                                        if (dataParsed[o].name === values2Retrieve[i]) {
-                                            if (dataParsed[o].value === "") {
-                                                console.log(yellow(bold("(Setup)")), `The data sent in the ${values2Retrieve[i]} value wasn't valid!`);
-                                                request.response.status = 500;
-                                                request.response.body = { status: "failed" };
-                                                return
+                                        if (dataParsed[o] != null || dataParsed[o] != undefined) {
+                                            if (dataParsed[o].name === values2Retrieve[i]) {
+                                                if (dataParsed[o].value === "") {
+                                                    console.log(yellow(bold("(Setup)")), `The data sent in the ${values2Retrieve[i]} value wasn't valid!`);
+                                                    request.response.status = 500;
+                                                    request.response.body = { status: "failed" };
+                                                    return
+                                                }
+                                                await config.updateConfig([values2Retrieve[i], (dataParsed[o].value ?? config.getData(values2Retrieve[i]))], false);
                                             }
-                                            await config.updateConfig([values2Retrieve[i], (dataParsed[o].value ?? config.getData(values2Retrieve[i]))], false);
                                         }
                                     }
                                 }
@@ -379,7 +381,7 @@ export class handler {
                         if (!config.getData("setup")) return
                         handler.utils.requestInformer(request.request.ip, request.request.headers.get("user-agent"), request.request.url.pathname, request.request.method);
                         request.response.type = "application/json"
-                        request.response.body = { id: (config.getData("id") as string), items: (config.getData("items") as { id: number, type: string, image: string, name: string, description: string, price: string, allergens: string }[]) };
+                        request.response.body = { id: (config.getData("id") as string), items: (config.getData("items") as { id: number, type: string, image: string, name: string, description: string, price: string, allergens: string }[]).filter((item) => (item.type != null || item.type != undefined)) };
                     }
                 }
             }

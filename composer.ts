@@ -21,15 +21,15 @@ import { config, categoryStructure, itemStructure } from "./config.ts"
 
 export class composer {
     static setup = async function () {
-        const composition = new DOMParser().parseFromString(await Deno.readTextFile(fromFileUrl(`${dirname(Deno.mainModule)}/pages/setup.html`)), "text/html")!;
+        const composition = await Deno.readTextFile(fromFileUrl(`${dirname(Deno.mainModule)}/pages/setup.html`));
 
-        return composition.documentElement!.outerHTML;
+        return composition;
     }
 
     static manage = async function () {
-        const composition = new DOMParser().parseFromString(await Deno.readTextFile(fromFileUrl(`${dirname(Deno.mainModule)}/pages/manage.html`)), "text/html")!;
+        const composition = render((await Deno.readTextFile(fromFileUrl(`${dirname(Deno.mainModule)}/pages/manage.html`))), { id: (config.getData("id") as string) });
 
-        return composition.documentElement!.outerHTML;
+        return composition;
     }
 
     static main = class {

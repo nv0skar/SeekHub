@@ -70,6 +70,12 @@
       text-shadow: -0.5px 0.5px grey;
     }
 
+    #preferencesSettingsContainer {
+      margin-left: 12rem;
+      margin-right: 12rem;
+      margin-top: 4rem;
+    }
+
     #opps {
       position: fixed;
       top: 50%;
@@ -111,6 +117,12 @@
     @media screen and (max-width: 1024px) {
       #login {
         width: 75%;
+      }
+
+      #preferencesSettingsContainer {
+        margin-left: 2rem;
+        margin-right: 2rem;
+        margin-top: 1rem;
       }
     }
 
@@ -203,6 +215,12 @@
 
     const errorInformer = (message) => alert(`${message}`);
 
+    const syncElementInput = (from, to) => {
+      const fromElement = document.getElementById(from);
+      const toElement = document.getElementById(to);
+      if (toElement.value === "") toElement.value = fromElement.value;
+    }
+
     const setButtonAction = (context, funcButton, funcKey) => {
       const contextWithButtons = ["login"];
       for (const i in contextWithButtons) {
@@ -226,7 +244,8 @@
     }
 
     const request2Server = async (method, route, data) => {
-      const request = fetch(new Request(route, { method: 'POST', headers: { 'content-type': 'application/json' }, body: data }))
+      const sessionToken = localStorage.getItem("sessionToken");
+      const request = fetch(new Request(route, { method: method, headers: { 'content-type': 'application/json', 'Authorization': sessionToken }, body: data }))
         .then((response) => { return response.clone().json() })
         .catch(() => { return });
       return request
@@ -264,6 +283,21 @@
       if (sessionValidation === undefined || sessionValidation["status"] === undefined || sessionValidation["status"] === "failed") { errorInformer("Opps! Something went wrong when trying to check the session code 😮"); return; };
       if (sessionValidation["valid"] === true) { authenticated = true; return; }
       else { localStorage.removeItem("sessionToken"); }
+    }
+
+    const updatePreferences = async (params) => {
+      let setupData = [
+        { name: "name", value: (document.getElementById("nameInput").value) },
+        { name: "title", value: (document.getElementById("titleInput").value) },
+        { name: "navTitle", value: (document.getElementById("navTitleInput").value) },
+        { name: "legalNotice", value: (document.getElementById("legalNoticeInput").value) }
+      ];
+      for (let i = 0; i < setupData.length; i++) {
+        if (setupData[i].value === "") {
+          delete setupData[i]
+        }
+      }
+      const response = await request2Server("POST", "/manage", JSON.stringify(setupData));
     }
 
     window.onload = async () => {
@@ -310,11 +344,14 @@
           id="masterKeyInput">
       </div>
       <input class="btn btn-primary btn-block" type="submit" value="Login" id="loginButton">
+      <br>
+      <center style="font-size: 8px; color: grey;">{{id}}</center>
     </div>
   </div>
   <div id="preferences">
+    <center style="font-size: 8px; color: grey;">{{id}}</center>
     <nav class="navbar">
-      <a class="navbar-brand" style="color:#3893D4;text-shadow: -2px 2px #3815D4;font-size:22px;">SeekHub</a>
+      <a class="navbar-brand" href="/" style="color:#3893D4;text-shadow: -1px 1px #3815D4;font-size:22px;">SeekHub</a>
       <ul class="navbar-nav ml-auto">
         <li id="preferencesPortfolioActivator" class="nav-item invert" onclick="setSubContext('preferencesPortfolio');">
           <a class="nav-link">Portfolio</a>
@@ -328,10 +365,44 @@
       </ul>
     </nav>
     <div id="preferencesPortfolio">
-      <center class="invert">This is the portfolio view</center>
+      <center class="invert">The portfolio view</center>
     </div>
     <div id="preferencesSettings">
-      <center class="invert">This is the settings view</center>
+      <div id="preferencesSettingsContainer">
+        <div class="form-group" id="nameContainer">
+          <label for="name" class="required">Local's name</label>
+          <input type="text" class="form-control" name="name" placeholder="Name" required="required" id="nameInput"
+            onchange="syncElementInput('nameInput', 'titleInput');">
+          <div class="form-text">
+            This will be your website's name
+          </div>
+        </div>
+        <div class="form-group" id="titleContainer">
+          <label for="title" class="required">Website's title</label>
+          <input type="text" class="form-control" name="title" placeholder="Title" required="required" id="titleInput">
+          <div class="form-text">
+            This will be the website's title that will show up at people's browsers
+          </div>
+        </div>
+        <div class="form-group" id="navTitleContainer">
+          <label for="navbarTitle" class="required">Navbar title</label>
+          <input type="text" class="form-control" name="navTitle" placeholder="Navbar title" required="required"
+            id="navTitleInput">
+          <div class="form-text">
+            This will show up as the navbar title
+          </div>
+        </div>
+        <div class="form-group" id="legalNoticeContainer">
+          <label for="notice" class="required">Legal Notices</label>
+          <input type="text" class="form-control" name="legalNotice" placeholder="Notices" required="required"
+            id="legalNoticeInput">
+          <div class="form-text">
+            This will show up in the website's footer, just under the local's name
+          </div>
+        </div>
+        <input class="btn btn-primary btn-block" type="submit" value="Update" id="preferencesSettingsUpdate"
+          onclick="updatePreferences();">
+      </div>
     </div>
   </div>
 </body>

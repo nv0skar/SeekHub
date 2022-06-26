@@ -1,4 +1,4 @@
-<h1 style="color:#3893D4;text-shadow: -2px 2px #3815D4;font-size:40px", align="center">SeekHub</h1>
+<h1 style="color:#3893D4;text-shadow: -1px 1px #3815D4;font-size:40px", align="center">SeekHub</h1>
 
 <h4 align="center">A beautiful portfolio to publish your local's menu</h4>
 
